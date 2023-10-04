@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1342299739080169311}
   - component: {fileID: 6210117409571878214}
+  - component: {fileID: 8273285605179694519}
   m_Layer: 0
   m_Name: PlayerManager
   m_TagString: Untagged
@@ -67,12 +68,12 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_JoinAction:
-    m_UseReference: 0
+    m_UseReference: 1
     m_Action:
-      m_Name: 
+      m_Name: Join
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: 
+      m_Id: 8674f42d-18cb-4d82-a11c-116aff70f859
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
@@ -88,3 +89,16 @@ MonoBehaviour:
     y: 0
     width: 1
     height: 1
+--- !u!114 &8273285605179694519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3682682726615163090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9ddca34917ff284186efe92e29da0e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  InputManager: {fileID: 0}

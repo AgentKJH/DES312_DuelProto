@@ -36,10 +36,35 @@ public class HeroController : MonoBehaviour {
     private float moveDir;
     private Vector2 moveVector;
 
+    // ++ Inputs ++
     void OnMovement(InputValue value)
     {
         moveDir = value.Get<float>();
         moveVector = new Vector2(moveDir * m_speed, 0);
+    }
+
+    void OnAttack()
+    {
+        if (m_timeSinceAttack > 0.5f && !m_rolling)
+        {
+            m_currentAttack++;
+
+            // Loop back to one after third attack
+            if (m_currentAttack > 3)
+                m_currentAttack = 1;
+
+            // Reset Attack combo if time since last attack is too large
+            if (m_timeSinceAttack > 1.0f)
+                m_currentAttack = 1;
+
+            // Call one of three attack animations "Attack1", "Attack2", "Attack3"
+            m_animator.SetTrigger("Attack" + m_currentAttack);
+
+
+
+            // Reset timer
+            m_timeSinceAttack = 0.0f;
+        }
     }
 
     // Use this for initialization
@@ -48,7 +73,8 @@ public class HeroController : MonoBehaviour {
         m_animator = GetComponent<Animator>();
         m_body2d = GetComponent<Rigidbody2D>();
         m_groundSensor = transform.Find("GroundSensor").GetComponent<Sensor_HeroKnight>();
-        m_attackSensor = transform.Find("AttackSensor").GetComponent<Sensor_HeroAttack>();
+        //m_attackSensor = transform.Find("AttackSensor").GetComponent<Sensor_HeroAttack>();
+        m_attackSensor = GetComponentInChildren<Sensor_HeroAttack>();
     }
 
 
@@ -56,19 +82,6 @@ public class HeroController : MonoBehaviour {
     {
         m_body2d.MovePosition(m_body2d.position + moveVector * Time.fixedDeltaTime);
     }
-
-    private void AttackEnable()
-    {
-        m_attackSensor.enabled = true;
-        print("Attack enable");
-    }
-
-    private void AttackDisable()
-    {
-        m_attackSensor.enabled = false;
-        print("Attack Disable");
-    }
-
 
     //Update is called once per frame
     void Update()
@@ -138,27 +151,27 @@ public class HeroController : MonoBehaviour {
             m_animator.SetTrigger("Hurt");
 
 
-        //Attack
-        else if (Input.GetMouseButtonDown(0) && m_timeSinceAttack > 0.25f && !m_rolling)
-        {
-            m_currentAttack++;
+        ////Attack
+        //else if (Input.GetMouseButtonDown(0) && m_timeSinceAttack > 0.25f && !m_rolling)
+        //{
+        //    m_currentAttack++;
 
-            // Loop back to one after third attack
-            if (m_currentAttack > 3)
-                m_currentAttack = 1;
+        //    // Loop back to one after third attack
+        //    if (m_currentAttack > 3)
+        //        m_currentAttack = 1;
 
-            // Reset Attack combo if time since last attack is too large
-            if (m_timeSinceAttack > 1.0f)
-                m_currentAttack = 1;
+        //    // Reset Attack combo if time since last attack is too large
+        //    if (m_timeSinceAttack > 1.0f)
+        //        m_currentAttack = 1;
 
-            // Call one of three attack animations "Attack1", "Attack2", "Attack3"
-            m_animator.SetTrigger("Attack" + m_currentAttack);
-            AttackEnable();
-            Invoke("AttackDisable", 0.1f);
+        //    // Call one of three attack animations "Attack1", "Attack2", "Attack3"
+        //    m_animator.SetTrigger("Attack" + m_currentAttack);
+        //    AttackEnable();
+        //    Invoke("AttackDisable", 0.1f);
 
-            // Reset timer
-            m_timeSinceAttack = 0.0f;
-        }
+        //    // Reset timer
+        //    m_timeSinceAttack = 0.0f;
+        //}
 
         //// Block
         //else if (Input.GetMouseButtonDown(1) && !m_rolling)
