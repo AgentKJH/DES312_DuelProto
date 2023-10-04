@@ -25,6 +25,7 @@ public class HeroController : MonoBehaviour {
     private bool                m_isWallSliding = false;
     private bool                m_grounded = false;
     private bool                m_rolling = false;
+    private bool                m_canAttack = true;
     private int                 m_facingDirection = 1;
     private int                 m_currentAttack = 0;
     private float               m_timeSinceAttack = 0.0f;
@@ -32,13 +33,13 @@ public class HeroController : MonoBehaviour {
     private float               m_rollDuration = 8.0f / 14.0f;
     private float               m_rollCurrentTime;
 
-    private float movement;
+    private float moveDir;
     private Vector2 moveVector;
 
     void OnMovement(InputValue value)
     {
-        movement = value.Get<float>();
-        moveVector = new Vector2(movement * m_speed, 0);
+        moveDir = value.Get<float>();
+        moveVector = new Vector2(moveDir * m_speed, 0);
     }
 
     // Use this for initialization
@@ -101,12 +102,12 @@ public class HeroController : MonoBehaviour {
         //float inputX = Input.GetAxis("Horizontal");
 
         // Swap direction of sprite depending on walk direction
-        if (movement > 0)
+        if (moveDir > 0)
         {
             GetComponent<SpriteRenderer>().flipX = false;
             m_facingDirection = 1;
         }
-        else if (movement < 0)
+        else if (moveDir < 0)
         {
             GetComponent<SpriteRenderer>().flipX = true;
             m_facingDirection = -1;
@@ -159,37 +160,37 @@ public class HeroController : MonoBehaviour {
             m_timeSinceAttack = 0.0f;
         }
 
-        // Block
-        else if (Input.GetMouseButtonDown(1) && !m_rolling)
-        {
-            m_animator.SetTrigger("Block");
-            m_animator.SetBool("IdleBlock", true);
-        }
+        //// Block
+        //else if (Input.GetMouseButtonDown(1) && !m_rolling)
+        //{
+        //    m_animator.SetTrigger("Block");
+        //    m_animator.SetBool("IdleBlock", true);
+        //}
 
-        else if (Input.GetMouseButtonUp(1))
-            m_animator.SetBool("IdleBlock", false);
+        //else if (Input.GetMouseButtonUp(1))
+        //    m_animator.SetBool("IdleBlock", false);
 
         // Roll
-        else if (Input.GetKeyDown("left shift") && !m_rolling && !m_isWallSliding)
-        {
-            m_rolling = true;
-            m_animator.SetTrigger("Roll");
-            m_body2d.velocity = new Vector2(m_facingDirection * m_rollForce, m_body2d.velocity.y);
-        }
+        //else if (Input.GetKeyDown("left shift") && !m_rolling && !m_isWallSliding)
+        //{
+        //    m_rolling = true;
+        //    m_animator.SetTrigger("Roll");
+        //    m_body2d.velocity = new Vector2(m_facingDirection * m_rollForce, m_body2d.velocity.y);
+        //}
 
 
         //Jump
-        else if (Input.GetKeyDown("space") && m_grounded && !m_rolling)
-        {
-            m_animator.SetTrigger("Jump");
-            m_grounded = false;
-            m_animator.SetBool("Grounded", m_grounded);
-            m_body2d.velocity = new Vector2(m_body2d.velocity.x, m_jumpForce);
-            m_groundSensor.Disable(0.2f);
-        }
+        //else if (Input.GetKeyDown("space") && m_grounded && !m_rolling)
+        //{
+        //    m_animator.SetTrigger("Jump");
+        //    m_grounded = false;
+        //    m_animator.SetBool("Grounded", m_grounded);
+        //    m_body2d.velocity = new Vector2(m_body2d.velocity.x, m_jumpForce);
+        //    m_groundSensor.Disable(0.2f);
+        //}
 
         //Run
-        else if (Mathf.Abs(movement) > Mathf.Epsilon)
+        else if (Mathf.Abs(moveDir) > Mathf.Epsilon)
         {
             // Reset timer
             m_delayToIdle = 0.05f;
