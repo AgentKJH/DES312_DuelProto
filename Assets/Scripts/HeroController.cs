@@ -59,7 +59,7 @@ public class HeroController : MonoBehaviour {
 
             // Call one of three attack animations "Attack1", "Attack2", "Attack3"
             m_animator.SetTrigger("Attack" + m_currentAttack);
-
+            m_attackSensor.DoAttack();
 
 
             // Reset timer
