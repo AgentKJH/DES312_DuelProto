@@ -147,11 +147,13 @@ public class HeroController : MonoBehaviour, IDamageable
         {
             GetComponent<SpriteRenderer>().flipX = false;
             m_facingDirection = 1;
+            m_attackSensor.transform.localPosition = m_attackSensorPosRight;
         }
         else if (moveDir < 0)
         {
             GetComponent<SpriteRenderer>().flipX = true;
             m_facingDirection = -1;
+            m_attackSensor.transform.localPosition = m_attackSensorPosLeft;
         }
 
         // Move
@@ -275,8 +277,11 @@ public class HeroController : MonoBehaviour, IDamageable
         {
             health -= damageAmount;
             m_healthBar.UpdateResourceBar(health, maxHealth);
+            print("Damage Taken: " + damageAmount + " Health: " + health);
         }
         else
+            health = 0;
+            m_healthBar.UpdateResourceBar(health, maxHealth);
             print("Player " + this.gameObject.name + " is Dead");
             
     }

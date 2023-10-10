@@ -26,8 +26,9 @@ public class Sensor_HeroAttack : MonoBehaviour
                 IDamageable damageable = collider.gameObject.GetComponent<IDamageable>();
                 if (damageable != null)
                 {
-                    damageable.Damage(controller.damage);
-                    print("damage");
+                    HeroController target = collider.GetComponent<HeroController>();
+                    target.Damage(20f);
+                    //print("damage");
                 }
                 print(collider.gameObject.name + " " + collider.GetType().Name);
             }
