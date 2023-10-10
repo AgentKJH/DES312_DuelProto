@@ -13,6 +13,4 @@ public class PlayerManager : MonoBehaviour
     {
         S_PlayerManager = this; // Set up singleton
     }
-    
-
 }

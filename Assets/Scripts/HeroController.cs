@@ -5,8 +5,11 @@ using System.Numerics;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 using Unity.VisualScripting;
+using UnityEditor;
+using NUnit.Framework.Constraints;
 
-public class HeroController : MonoBehaviour {
+public class HeroController : MonoBehaviour, IDamageable 
+{
 
     [SerializeField] float      m_speed = 4.0f;
     [SerializeField] float      m_jumpForce = 7.5f;
@@ -16,16 +19,20 @@ public class HeroController : MonoBehaviour {
     private Vector3 m_attackSensorPosRight = new Vector3(0.915000021f, 0.722000003f, 0);
     private Vector3 m_attackSensorPosLeft = new Vector3(-0.984000027f, 0.722000003f, 0);
 
-    public float damage;
+    public float damage = 20;
+    public float maxHealth = 100;
+    public float health;
+    private float blockMultiplier = 0.1f;
+    public EplayerState playerState = EplayerState.standing;
 
     private Animator            m_animator;
     private Rigidbody2D         m_body2d;
     private Sensor_HeroKnight   m_groundSensor;
-    private Sensor_HeroAttack m_attackSensor;
+    private Sensor_HeroAttack   m_attackSensor;
+    private ResourceBar         m_healthBar;
     private bool                m_isWallSliding = false;
     private bool                m_grounded = false;
     private bool                m_rolling = false;
-    private bool                m_canAttack = true;
     private int                 m_facingDirection = 1;
     private int                 m_currentAttack = 0;
     private float               m_timeSinceAttack = 0.0f;
@@ -36,16 +43,41 @@ public class HeroController : MonoBehaviour {
     private float moveDir;
     private Vector2 moveVector;
 
+    public enum EplayerState
+    {
+        standing,
+        attacking,
+        moving,
+        blocking
+    }
+
+    // Use this for initialization
+    void Start()
+    {
+        m_animator = GetComponent<Animator>();
+        m_body2d = GetComponent<Rigidbody2D>();
+        m_groundSensor = transform.Find("GroundSensor").GetComponent<Sensor_HeroKnight>();
+        //m_attackSensor = transform.Find("AttackSensor").GetComponent<Sensor_HeroAttack>();
+        m_attackSensor = GetComponentInChildren<Sensor_HeroAttack>();
+        m_healthBar = GetComponentInChildren<ResourceBar>();
+
+        health = maxHealth;
+    }
+
     // ++ Inputs ++
     void OnMovement(InputValue value)
     {
-        moveDir = value.Get<float>();
-        moveVector = new Vector2(moveDir * m_speed, 0);
+        if (playerState != EplayerState.attacking || playerState != EplayerState.blocking)
+        {
+            moveDir = value.Get<float>();
+            moveVector = new Vector2(moveDir * m_speed, m_body2d.velocity.y);
+            playerState = EplayerState.moving;
+        }
     }
 
     void OnAttack()
     {
-        if (m_timeSinceAttack > 0.5f && !m_rolling)
+        if (m_timeSinceAttack > 0.25f && !m_rolling)
         {
             m_currentAttack++;
 
@@ -60,23 +92,12 @@ public class HeroController : MonoBehaviour {
             // Call one of three attack animations "Attack1", "Attack2", "Attack3"
             m_animator.SetTrigger("Attack" + m_currentAttack);
             m_attackSensor.DoAttack();
-
+            playerState = EplayerState.attacking;
 
             // Reset timer
             m_timeSinceAttack = 0.0f;
         }
     }
-
-    // Use this for initialization
-    void Start ()
-    {
-        m_animator = GetComponent<Animator>();
-        m_body2d = GetComponent<Rigidbody2D>();
-        m_groundSensor = transform.Find("GroundSensor").GetComponent<Sensor_HeroKnight>();
-        //m_attackSensor = transform.Find("AttackSensor").GetComponent<Sensor_HeroAttack>();
-        m_attackSensor = GetComponentInChildren<Sensor_HeroAttack>();
-    }
-
 
     private void FixedUpdate()
     {
@@ -88,6 +109,11 @@ public class HeroController : MonoBehaviour {
     {
         // Increase timer that controls attack combo
         m_timeSinceAttack += Time.deltaTime;
+
+        if (m_timeSinceAttack > 0.15 && playerState == EplayerState.attacking)
+        {
+            playerState = EplayerState.standing;
+        }
 
         // Increase timer that checks roll duration
         if (m_rolling)
@@ -102,6 +128,7 @@ public class HeroController : MonoBehaviour {
         {
             m_grounded = true;
             m_animator.SetBool("Grounded", m_grounded);
+            //print("Just landed " + m_grounded);
         }
 
         //Check if character just started falling
@@ -109,6 +136,7 @@ public class HeroController : MonoBehaviour {
         {
             m_grounded = false;
             m_animator.SetBool("Grounded", m_grounded);
+            //print("Started Falling " + m_grounded);
         }
 
         // -- Handle input and movement --
@@ -218,6 +246,39 @@ public class HeroController : MonoBehaviour {
             if (m_delayToIdle < 0)
                 m_animator.SetInteger("AnimState", 0);
         }
+    }
+
+    // damage taken interface
+    public void Damage(float damageAmount)
+    {
+        print("controller Damaged " + playerState);
+        switch (playerState)
+        {
+            case EplayerState.standing:
+                TakeDamage(damageAmount);
+                break;
+            case EplayerState.moving:
+                TakeDamage(damageAmount);
+                break;
+            case EplayerState.attacking:
+                print("clash");
+                break;
+            case EplayerState.blocking:
+                TakeDamage(damageAmount * blockMultiplier);
+                break;
+        }
+    }
+
+    private void TakeDamage(float damageAmount)
+    {
+        if (health - damageAmount > 0)
+        {
+            health -= damageAmount;
+            m_healthBar.UpdateResourceBar(health, maxHealth);
+        }
+        else
+            print("Player " + this.gameObject.name + " is Dead");
+            
     }
 
     // Animation Events
