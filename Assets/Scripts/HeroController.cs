@@ -12,46 +12,68 @@ public class HeroController : MonoBehaviour, IDamageable
 {
 
     [SerializeField] float      m_speed = 4.0f;
-    [SerializeField] float      m_jumpForce = 7.5f;
-    [SerializeField] float      m_rollForce = 6.0f;
+    //[SerializeField] float      m_jumpForce = 7.5f;
+    //[SerializeField] float      m_rollForce = 6.0f;
     [SerializeField] bool       m_noBlood = false;
 
+    // Attack Sensor postion vars
     private Vector3 m_attackSensorPosRight = new Vector3(0.915000021f, 0.722000003f, 0);
     private Vector3 m_attackSensorPosLeft = new Vector3(-0.984000027f, 0.722000003f, 0);
 
-    public float damage = 20;
-    public float maxHealth = 100;
+    // ++ character stats ++
+    // public
+    public EplayerState playerState = EplayerState.Default;
+    public float damage = 20f;
+    public float maxHealth = 100f;
     public float health;
-    private float blockMultiplier = 0.1f;
-    public EplayerState playerState = EplayerState.standing;
+    public float maxEnergy = 100f;
+    public float energy = 100f;
 
+    private float energyAttackCost = 10f;
+    private float blockMultiplier = 0.1f;
+    private bool m_grounded = false;
+    private int m_facingDirection = 1;
+
+    // attack
+    private int m_currentAttack = 0;
+    private float m_timeSinceAttack = 0.0f;
+
+    // energy
+    private float m_timeSinceEnergyGain = 0.0f;
+    private float m_energyGainInterval = 0.1f;
+    private float m_energyGainAmount = 1f;
+    
+
+    private float m_delayToIdle = 0.0f;
+    private float m_rollDuration = 8.0f / 14.0f;
+    private float m_rollCurrentTime;
+
+    // compoent refs
     private Animator            m_animator;
     private Rigidbody2D         m_body2d;
     private Sensor_HeroKnight   m_groundSensor;
     private Sensor_HeroAttack   m_attackSensor;
-    private ResourceBar         m_healthBar;
-    private bool                m_isWallSliding = false;
-    private bool                m_grounded = false;
+    [SerializeField] ResourceBar m_healthBar;
+    [SerializeField] ResourceBar m_energyBar;
+    //private bool                m_isWallSliding = false;
     private bool                m_rolling = false;
-    private int                 m_facingDirection = 1;
-    private int                 m_currentAttack = 0;
-    private float               m_timeSinceAttack = 0.0f;
-    private float               m_delayToIdle = 0.0f;
-    private float               m_rollDuration = 8.0f / 14.0f;
-    private float               m_rollCurrentTime;
 
+
+    // Movement var
     private float moveDir;
     private Vector2 moveVector;
 
+    /// <summary>
+    /// Enum for tracking player state
+    /// </summary>
     public enum EplayerState
     {
-        standing,
-        attacking,
-        moving,
-        blocking
+        Default,
+        Attacking,
+        Blocking
     }
 
-    // Use this for initialization
+    // Initialization, get compoent refs
     void Start()
     {
         m_animator = GetComponent<Animator>();
@@ -59,26 +81,34 @@ public class HeroController : MonoBehaviour, IDamageable
         m_groundSensor = transform.Find("GroundSensor").GetComponent<Sensor_HeroKnight>();
         //m_attackSensor = transform.Find("AttackSensor").GetComponent<Sensor_HeroAttack>();
         m_attackSensor = GetComponentInChildren<Sensor_HeroAttack>();
-        m_healthBar = GetComponentInChildren<ResourceBar>();
 
         health = maxHealth;
     }
 
     // ++ Inputs ++
+    /// <summary>
+    /// Gets movement value from Movement Input Action
+    /// </summary>
+    /// <param name="value"></param>
     void OnMovement(InputValue value)
     {
-        if (playerState != EplayerState.attacking || playerState != EplayerState.blocking)
+        if (playerState == EplayerState.Default) // Sets movement value when playerState is Default
         {
             moveDir = value.Get<float>();
             moveVector = new Vector2(moveDir * m_speed, m_body2d.velocity.y);
-            playerState = EplayerState.moving;
+            playerState = EplayerState.Default;
         }
     }
 
+    /// <summary>
+    /// Called by Attack Input Action
+    /// </summary>
     void OnAttack()
     {
-        if (m_timeSinceAttack > 0.25f && !m_rolling)
+        if (m_timeSinceAttack > 0.25f && !m_rolling && energy - energyAttackCost > 0f)
         {
+            energy -= energyAttackCost;
+            m_energyBar.UpdateResourceBar(energy, maxEnergy);
             m_currentAttack++;
 
             // Loop back to one after third attack
@@ -92,7 +122,7 @@ public class HeroController : MonoBehaviour, IDamageable
             // Call one of three attack animations "Attack1", "Attack2", "Attack3"
             m_animator.SetTrigger("Attack" + m_currentAttack);
             m_attackSensor.DoAttack();
-            playerState = EplayerState.attacking;
+            playerState = EplayerState.Attacking;
 
             // Reset timer
             m_timeSinceAttack = 0.0f;
@@ -101,7 +131,11 @@ public class HeroController : MonoBehaviour, IDamageable
 
     private void FixedUpdate()
     {
-        m_body2d.MovePosition(m_body2d.position + moveVector * Time.fixedDeltaTime);
+        // Movement 
+        if (playerState == EplayerState.Default)
+        {
+            m_body2d.MovePosition(m_body2d.position + moveVector * Time.fixedDeltaTime);
+        } else m_body2d.velocity = Vector2.zero; // Stops velocity if not in default state
     }
 
     //Update is called once per frame
@@ -109,10 +143,20 @@ public class HeroController : MonoBehaviour, IDamageable
     {
         // Increase timer that controls attack combo
         m_timeSinceAttack += Time.deltaTime;
+        m_timeSinceEnergyGain += Time.deltaTime;
 
-        if (m_timeSinceAttack > 0.15 && playerState == EplayerState.attacking)
+        if (m_timeSinceAttack > 0.15 && playerState == EplayerState.Attacking)
         {
-            playerState = EplayerState.standing;
+            playerState = EplayerState.Default;
+        }
+        
+
+        // energy regen
+        if (m_timeSinceEnergyGain > m_energyGainInterval)
+        {
+            energy += m_energyGainAmount;
+            m_energyBar.UpdateResourceBar(energy, maxEnergy);
+            m_timeSinceEnergyGain = 0.0f;
         }
 
         // Increase timer that checks roll duration
@@ -256,16 +300,13 @@ public class HeroController : MonoBehaviour, IDamageable
         print("controller Damaged " + playerState);
         switch (playerState)
         {
-            case EplayerState.standing:
+            case EplayerState.Default:
                 TakeDamage(damageAmount);
                 break;
-            case EplayerState.moving:
-                TakeDamage(damageAmount);
-                break;
-            case EplayerState.attacking:
+            case EplayerState.Attacking:
                 print("clash");
                 break;
-            case EplayerState.blocking:
+            case EplayerState.Blocking:
                 TakeDamage(damageAmount * blockMultiplier);
                 break;
         }
