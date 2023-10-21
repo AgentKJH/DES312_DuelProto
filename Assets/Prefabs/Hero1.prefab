@@ -184,6 +184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slider: {fileID: 1681176366460475524}
+  FillArea: {fileID: 5788658138768951617}
 --- !u!1 &729913923101847427
 GameObject:
   m_ObjectHideFlags: 0
@@ -830,6 +831,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_speed: 4
   m_noBlood: 0
+  PlayerNumber: 0
   playerState: 0
   damage: 20
   maxHealth: 100
@@ -838,6 +840,7 @@ MonoBehaviour:
   energy: 100
   m_healthBar: {fileID: 9039057019500721806}
   m_energyBar: {fileID: 7269321164006623425}
+  canMove: 0
 --- !u!212 &2954181336601895002
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1243,3 +1246,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   slider: {fileID: 7768341115574565081}
+  FillArea: {fileID: 3322908353310965353}

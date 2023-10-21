@@ -20,6 +20,8 @@ public class HeroController : MonoBehaviour, IDamageable
     private Vector3 m_attackSensorPosRight = new Vector3(0.915000021f, 0.722000003f, 0);
     private Vector3 m_attackSensorPosLeft = new Vector3(-0.984000027f, 0.722000003f, 0);
 
+    public int PlayerNumber;
+
     // ++ character stats ++
     // public
     public EplayerState playerState = EplayerState.Default;
@@ -29,7 +31,7 @@ public class HeroController : MonoBehaviour, IDamageable
     public float maxEnergy = 100f;
     public float energy = 100f;
 
-    private float energyAttackCost = 10f;
+    private float energyAttackCost = 100f;
     private float blockMultiplier = 0.1f;
     private bool m_grounded = false;
     private int m_facingDirection = 1;
@@ -40,7 +42,7 @@ public class HeroController : MonoBehaviour, IDamageable
 
     // energy
     private float m_timeSinceEnergyGain = 0.0f;
-    private float m_energyGainInterval = 0.1f;
+    private float m_energyGainInterval = 0.5f;
     private float m_energyGainAmount = 1f;
     
 
@@ -62,6 +64,7 @@ public class HeroController : MonoBehaviour, IDamageable
     // Movement var
     private float moveDir;
     private Vector2 moveVector;
+    public bool canMove;
 
     /// <summary>
     /// Enum for tracking player state
@@ -70,7 +73,8 @@ public class HeroController : MonoBehaviour, IDamageable
     {
         Default,
         Attacking,
-        Blocking
+        Blocking,
+        Dead
     }
 
     // Initialization, get compoent refs
@@ -83,6 +87,10 @@ public class HeroController : MonoBehaviour, IDamageable
         m_attackSensor = GetComponentInChildren<Sensor_HeroAttack>();
 
         health = maxHealth;
+
+        // add player to player manager
+        PlayerNumber =  PlayerManager.S_PlayerManager.PlayerJoined(this);
+        print("Player Joined: Player " + PlayerNumber);
     }
 
     // ++ Inputs ++
@@ -92,10 +100,10 @@ public class HeroController : MonoBehaviour, IDamageable
     /// <param name="value"></param>
     void OnMovement(InputValue value)
     {
-        if (playerState == EplayerState.Default) // Sets movement value when playerState is Default
+        if (playerState == EplayerState.Default && canMove) // Sets movement value when playerState is Default
         {
             moveDir = value.Get<float>();
-            moveVector = new Vector2(moveDir * m_speed, m_body2d.velocity.y);
+            moveVector = new Vector2(moveDir * m_speed, m_body2d.velocity.y); 
             playerState = EplayerState.Default;
         }
     }
@@ -105,7 +113,7 @@ public class HeroController : MonoBehaviour, IDamageable
     /// </summary>
     void OnAttack()
     {
-        if (m_timeSinceAttack > 0.25f && !m_rolling && energy - energyAttackCost > 0f)
+        if (m_timeSinceAttack > 0.25f && !m_rolling && energy - energyAttackCost > -0.1f)
         {
             energy -= energyAttackCost;
             m_energyBar.UpdateResourceBar(energy, maxEnergy);
@@ -128,6 +136,13 @@ public class HeroController : MonoBehaviour, IDamageable
             m_timeSinceAttack = 0.0f;
         }
     }
+
+    // ++ Player Join ++
+    //public void OnPlayerJoinAction()
+    //{
+    //    print("player joined");
+    //    //PlayerNumber = PlayerManager.S_PlayerManager.PlayerJoined(this);
+    //}
 
     private void FixedUpdate()
     {
@@ -152,11 +167,16 @@ public class HeroController : MonoBehaviour, IDamageable
         
 
         // energy regen
-        if (m_timeSinceEnergyGain > m_energyGainInterval)
+        if (m_timeSinceEnergyGain > m_energyGainInterval && energy != maxEnergy && playerState != EplayerState.Dead)
         {
             energy += m_energyGainAmount;
             m_energyBar.UpdateResourceBar(energy, maxEnergy);
+            if  (energy > maxEnergy)
+            {
+                energy = maxEnergy;
+            }
             m_timeSinceEnergyGain = 0.0f;
+            //print("Energy Updated - Player: " + PlayerNumber);
         }
 
         // Increase timer that checks roll duration
@@ -215,14 +235,15 @@ public class HeroController : MonoBehaviour, IDamageable
 
 
         //Death
-        if (Input.GetKeyDown("e") && !m_rolling)
-        {
-            m_animator.SetBool("noBlood", m_noBlood);
-            m_animator.SetTrigger("Death");
-        }
-        //Hurt
-        else if (Input.GetKeyDown("q") && !m_rolling)
-            m_animator.SetTrigger("Hurt");
+        //if (Input.GetKeyDown("e") && !m_rolling)
+        //{
+        //    m_animator.SetBool("noBlood", m_noBlood);
+        //    m_animator.SetTrigger("Death");
+
+        //}
+        ////Hurt
+        //else if (Input.GetKeyDown("q") && !m_rolling)
+        //    m_animator.SetTrigger("Hurt");
 
 
         ////Attack
@@ -277,7 +298,7 @@ public class HeroController : MonoBehaviour, IDamageable
         //}
 
         //Run
-        else if (Mathf.Abs(moveDir) > Mathf.Epsilon)
+        if (Mathf.Abs(moveDir) > Mathf.Epsilon)
         {
             // Reset timer
             m_delayToIdle = 0.05f;
@@ -309,22 +330,37 @@ public class HeroController : MonoBehaviour, IDamageable
             case EplayerState.Blocking:
                 TakeDamage(damageAmount * blockMultiplier);
                 break;
+            case EplayerState.Dead:
+                break;
         }
     }
 
+    /// <summary>
+    /// Handles damage taken and death when health reaches 0
+    /// </summary>
+    /// <param name="damageAmount"></param>
     private void TakeDamage(float damageAmount)
     {
         if (health - damageAmount > 0)
         {
             health -= damageAmount;
             m_healthBar.UpdateResourceBar(health, maxHealth);
-            print("Damage Taken: " + damageAmount + " Health: " + health);
+            m_animator.SetTrigger("Hurt");
+            print("Player " + PlayerNumber + "Damage Taken: " + damageAmount + " Health: " + health);
         }
-        else
+        else //Death
+        {
+            playerState = EplayerState.Dead;
             health = 0;
             m_healthBar.UpdateResourceBar(health, maxHealth);
-            print("Player " + this.gameObject.name + " is Dead");
+            print("Player " + PlayerNumber + " is Dead");
+            m_animator.SetBool("noBlood", m_noBlood);
+            m_animator.SetTrigger("Death");
+
+            PlayerManager.S_PlayerManager.GameOver(PlayerNumber);
+        }
             
+
     }
 
     // Animation Events
