@@ -831,6 +831,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_speed: 4
   m_noBlood: 0
+  m_blockFlash: {fileID: 8690950337773083281, guid: 803b96fa8ebd5a749bdf32bd0e553139, type: 3}
   PlayerNumber: 0
   playerState: 0
   damage: 20
@@ -838,6 +839,8 @@ MonoBehaviour:
   health: 100
   maxEnergy: 100
   energy: 100
+  might: 0
+  doClash: 0
   m_healthBar: {fileID: 9039057019500721806}
   m_energyBar: {fileID: 7269321164006623425}
   canMove: 0

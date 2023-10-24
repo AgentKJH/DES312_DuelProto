@@ -15,6 +15,7 @@ public class HeroController : MonoBehaviour, IDamageable
     //[SerializeField] float      m_jumpForce = 7.5f;
     //[SerializeField] float      m_rollForce = 6.0f;
     [SerializeField] bool       m_noBlood = false;
+    [SerializeField] GameObject m_blockFlash;
 
     // Attack Sensor postion vars
     private Vector3 m_attackSensorPosRight = new Vector3(0.915000021f, 0.722000003f, 0);
@@ -30,11 +31,15 @@ public class HeroController : MonoBehaviour, IDamageable
     public float health;
     public float maxEnergy = 100f;
     public float energy = 100f;
+    public bool might = false;
+    public bool doClash = false;
 
-    private float energyAttackCost = 100f;
+    private float energyAttackCost = 20f;
     private float blockMultiplier = 0.1f;
+    private float clashMultiplier = 0.2f;
     private bool m_grounded = false;
     private int m_facingDirection = 1;
+    private float clashForce = 10000f;
 
     // attack
     private int m_currentAttack = 0;
@@ -65,6 +70,7 @@ public class HeroController : MonoBehaviour, IDamageable
     private float moveDir;
     private Vector2 moveVector;
     public bool canMove;
+   
 
     /// <summary>
     /// Enum for tracking player state
@@ -137,12 +143,11 @@ public class HeroController : MonoBehaviour, IDamageable
         }
     }
 
-    // ++ Player Join ++
-    //public void OnPlayerJoinAction()
-    //{
-    //    print("player joined");
-    //    //PlayerNumber = PlayerManager.S_PlayerManager.PlayerJoined(this);
-    //}
+    public void ClashReceive()
+    {
+        m_body2d.AddForceX(clashForce * (m_facingDirection * -1));
+        print("clashed");
+    }
 
     private void FixedUpdate()
     {
@@ -206,18 +211,18 @@ public class HeroController : MonoBehaviour, IDamageable
         // -- Handle input and movement --
         //float inputX = Input.GetAxis("Horizontal");
 
-        // Swap direction of sprite depending on walk direction
+        // Handle direction swap of character on movement direction
         if (moveDir > 0)
         {
-            GetComponent<SpriteRenderer>().flipX = false;
+            GetComponent<SpriteRenderer>().flipX = false; // flip sprite
             m_facingDirection = 1;
-            m_attackSensor.transform.localPosition = m_attackSensorPosRight;
+            m_attackSensor.transform.localPosition = m_attackSensorPosRight; // move attack sensor
         }
         else if (moveDir < 0)
         {
-            GetComponent<SpriteRenderer>().flipX = true;
+            GetComponent<SpriteRenderer>().flipX = true; // flip sprite
             m_facingDirection = -1;
-            m_attackSensor.transform.localPosition = m_attackSensorPosLeft;
+            m_attackSensor.transform.localPosition = m_attackSensorPosLeft; //move attack sensor
         }
 
         // Move
@@ -325,7 +330,9 @@ public class HeroController : MonoBehaviour, IDamageable
                 TakeDamage(damageAmount);
                 break;
             case EplayerState.Attacking:
-                print("clash");
+                ClashReceive();
+                Instantiate(m_blockFlash, this.transform.position + new Vector3(-0.2f, 0.7f, 0), UnityEngine.Quaternion.identity);
+                TakeDamage(damageAmount * clashMultiplier);
                 break;
             case EplayerState.Blocking:
                 TakeDamage(damageAmount * blockMultiplier);
