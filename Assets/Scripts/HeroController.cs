@@ -8,7 +8,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 using NUnit.Framework.Constraints;
 
-public class HeroController : MonoBehaviour, IDamageable 
+public class HeroController : MonoBehaviour, IDamageable
 {
 
     [SerializeField] float      m_speed = 4.0f;
@@ -39,7 +39,7 @@ public class HeroController : MonoBehaviour, IDamageable
     private float clashMultiplier = 0.2f;
     private bool m_grounded = false;
     private int m_facingDirection = 1;
-    private float clashForce = 10000f;
+    private float clashForce = 5000f;
 
     // attack
     private int m_currentAttack = 0;
@@ -48,7 +48,7 @@ public class HeroController : MonoBehaviour, IDamageable
     // energy
     private float m_timeSinceEnergyGain = 0.0f;
     private float m_energyGainInterval = 0.5f;
-    private float m_energyGainAmount = 1f;
+    private float m_energyGainAmount = 5f;
     
 
     private float m_delayToIdle = 0.0f;
@@ -96,6 +96,7 @@ public class HeroController : MonoBehaviour, IDamageable
 
         // add player to player manager
         PlayerNumber =  PlayerManager.S_PlayerManager.PlayerJoined(this);
+        gameObject.name = "Hero - Player" + PlayerNumber;
         print("Player Joined: Player " + PlayerNumber);
     }
 
@@ -146,7 +147,13 @@ public class HeroController : MonoBehaviour, IDamageable
     public void ClashReceive()
     {
         m_body2d.AddForceX(clashForce * (m_facingDirection * -1));
-        print("clashed");
+        print("clashed Player" + PlayerNumber);
+    }
+
+    public void ClashSend(GameObject attackRef)
+    {
+        HeroController controller = gameObject.GetComponent<HeroController>();
+        controller.ClashReceive();
     }
 
     private void FixedUpdate()
@@ -232,47 +239,6 @@ public class HeroController : MonoBehaviour, IDamageable
         //Set AirSpeed in animator
         m_animator.SetFloat("AirSpeedY", m_body2d.velocity.y);
 
-        //// -- Handle Animations --
-        ////Wall Slide
-        //m_isWallSliding = (m_wallSensorR1.State() && m_wallSensorR2.State()) || (m_wallSensorL1.State() && m_wallSensorL2.State());
-        //m_animator.SetBool("WallSlide", m_isWallSliding);
-
-
-
-        //Death
-        //if (Input.GetKeyDown("e") && !m_rolling)
-        //{
-        //    m_animator.SetBool("noBlood", m_noBlood);
-        //    m_animator.SetTrigger("Death");
-
-        //}
-        ////Hurt
-        //else if (Input.GetKeyDown("q") && !m_rolling)
-        //    m_animator.SetTrigger("Hurt");
-
-
-        ////Attack
-        //else if (Input.GetMouseButtonDown(0) && m_timeSinceAttack > 0.25f && !m_rolling)
-        //{
-        //    m_currentAttack++;
-
-        //    // Loop back to one after third attack
-        //    if (m_currentAttack > 3)
-        //        m_currentAttack = 1;
-
-        //    // Reset Attack combo if time since last attack is too large
-        //    if (m_timeSinceAttack > 1.0f)
-        //        m_currentAttack = 1;
-
-        //    // Call one of three attack animations "Attack1", "Attack2", "Attack3"
-        //    m_animator.SetTrigger("Attack" + m_currentAttack);
-        //    AttackEnable();
-        //    Invoke("AttackDisable", 0.1f);
-
-        //    // Reset timer
-        //    m_timeSinceAttack = 0.0f;
-        //}
-
         //// Block
         //else if (Input.GetMouseButtonDown(1) && !m_rolling)
         //{
@@ -321,7 +287,7 @@ public class HeroController : MonoBehaviour, IDamageable
     }
 
     // damage taken interface
-    public void Damage(float damageAmount)
+    public void Damage(float damageAmount, GameObject attackerRef)
     {
         print("controller Damaged " + playerState);
         switch (playerState)
@@ -331,8 +297,9 @@ public class HeroController : MonoBehaviour, IDamageable
                 break;
             case EplayerState.Attacking:
                 ClashReceive();
+                ClashSend(attackerRef); // calls clash receive on other character
                 Instantiate(m_blockFlash, this.transform.position + new Vector3(-0.2f, 0.7f, 0), UnityEngine.Quaternion.identity);
-                TakeDamage(damageAmount * clashMultiplier);
+                TakeDamage(damageAmount);
                 break;
             case EplayerState.Blocking:
                 TakeDamage(damageAmount * blockMultiplier);
@@ -353,7 +320,7 @@ public class HeroController : MonoBehaviour, IDamageable
             health -= damageAmount;
             m_healthBar.UpdateResourceBar(health, maxHealth);
             m_animator.SetTrigger("Hurt");
-            print("Player " + PlayerNumber + "Damage Taken: " + damageAmount + " Health: " + health);
+            print("Player" + PlayerNumber + " Damage Taken: " + damageAmount + " Health: " + health);
         }
         else //Death
         {
@@ -368,6 +335,11 @@ public class HeroController : MonoBehaviour, IDamageable
         }
             
 
+    }
+
+    public void Damage(float damageAmount, out GameObject objectRef)
+    {
+        throw new System.NotImplementedException();
     }
 
     // Animation Events
