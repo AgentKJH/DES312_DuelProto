@@ -25,21 +25,21 @@ public class HeroController : MonoBehaviour, IDamageable
 
     // ++ character stats ++
     // public
-    public EplayerState playerState = EplayerState.Default;
-    public float damage = 20f;
-    public float maxHealth = 100f;
-    public float health;
-    public float maxEnergy = 100f;
-    public float energy = 100f;
-    public bool might = false;
-    public bool doClash = false;
+    public EplayerState m_playerState = EplayerState.Default;
+    public float m_damage = 20f;
+    public float m_maxHealth = 100f;
+    public float m_health;
+    public float m_maxEnergy = 100f;
+    public float m_energy = 100f;
+    public bool m_might = false;
+    public bool m_doClash = false;
 
-    private float energyAttackCost = 20f;
-    private float blockMultiplier = 0.1f;
-    private float clashMultiplier = 0.2f;
+    private float m_energyAttackCost = 20f;
+    private float m_blockMultiplier = 0.1f;
+    private float m_clashDamageMultiplier = 0.5f;
     private bool m_grounded = false;
     private int m_facingDirection = 1;
-    private float clashForce = 5000f;
+    private float m_clashForce = 5000f;
 
     // attack
     private int m_currentAttack = 0;
@@ -67,9 +67,9 @@ public class HeroController : MonoBehaviour, IDamageable
 
 
     // Movement var
-    private float moveDir;
-    private Vector2 moveVector;
-    public bool canMove;
+    private float m_moveDir;
+    private Vector2 m_moveVector;
+    public bool m_canMove;
    
 
     /// <summary>
@@ -92,10 +92,10 @@ public class HeroController : MonoBehaviour, IDamageable
         //m_attackSensor = transform.Find("AttackSensor").GetComponent<Sensor_HeroAttack>();
         m_attackSensor = GetComponentInChildren<Sensor_HeroAttack>();
 
-        health = maxHealth;
+        m_health = m_maxHealth;
 
         // add player to player manager
-        PlayerNumber =  PlayerManager.S_PlayerManager.PlayerJoined(this);
+        PlayerNumber =  PlayerManager.Instance.PlayerJoined(this);
         gameObject.name = "Hero - Player" + PlayerNumber;
         print("Player Joined: Player " + PlayerNumber);
     }
@@ -107,11 +107,11 @@ public class HeroController : MonoBehaviour, IDamageable
     /// <param name="value"></param>
     void OnMovement(InputValue value)
     {
-        if (playerState == EplayerState.Default && canMove) // Sets movement value when playerState is Default
+        if (m_playerState == EplayerState.Default && m_canMove) // Sets movement value when playerState is Default
         {
-            moveDir = value.Get<float>();
-            moveVector = new Vector2(moveDir * m_speed, m_body2d.velocity.y); 
-            playerState = EplayerState.Default;
+            m_moveDir = value.Get<float>();
+            m_moveVector = new Vector2(m_moveDir * m_speed, m_body2d.velocity.y); 
+            m_playerState = EplayerState.Default;
         }
     }
 
@@ -120,10 +120,10 @@ public class HeroController : MonoBehaviour, IDamageable
     /// </summary>
     void OnAttack()
     {
-        if (m_timeSinceAttack > 0.25f && !m_rolling && energy - energyAttackCost > -0.1f)
+        if (m_timeSinceAttack > 0.25f && m_playerState != EplayerState.Dead && m_energy - m_energyAttackCost > -0.1f)
         {
-            energy -= energyAttackCost;
-            m_energyBar.UpdateResourceBar(energy, maxEnergy);
+            m_energy -= m_energyAttackCost;
+            m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
             m_currentAttack++;
 
             // Loop back to one after third attack
@@ -137,31 +137,21 @@ public class HeroController : MonoBehaviour, IDamageable
             // Call one of three attack animations "Attack1", "Attack2", "Attack3"
             m_animator.SetTrigger("Attack" + m_currentAttack);
             m_attackSensor.DoAttack();
-            playerState = EplayerState.Attacking;
+            m_playerState = EplayerState.Attacking;
 
             // Reset timer
             m_timeSinceAttack = 0.0f;
         }
     }
 
-    public void ClashReceive()
-    {
-        m_body2d.AddForceX(clashForce * (m_facingDirection * -1));
-        print("clashed Player" + PlayerNumber);
-    }
 
-    public void ClashSend(GameObject attackRef)
-    {
-        HeroController controller = gameObject.GetComponent<HeroController>();
-        controller.ClashReceive();
-    }
 
     private void FixedUpdate()
     {
         // Movement 
-        if (playerState == EplayerState.Default)
+        if (m_playerState == EplayerState.Default)
         {
-            m_body2d.MovePosition(m_body2d.position + moveVector * Time.fixedDeltaTime);
+            m_body2d.MovePosition(m_body2d.position + m_moveVector * Time.fixedDeltaTime);
         } else m_body2d.velocity = Vector2.zero; // Stops velocity if not in default state
     }
 
@@ -172,20 +162,20 @@ public class HeroController : MonoBehaviour, IDamageable
         m_timeSinceAttack += Time.deltaTime;
         m_timeSinceEnergyGain += Time.deltaTime;
 
-        if (m_timeSinceAttack > 0.15 && playerState == EplayerState.Attacking)
+        if (m_timeSinceAttack > 0.15 && m_playerState == EplayerState.Attacking)
         {
-            playerState = EplayerState.Default;
+            m_playerState = EplayerState.Default;
         }
         
 
         // energy regen
-        if (m_timeSinceEnergyGain > m_energyGainInterval && energy != maxEnergy && playerState != EplayerState.Dead)
+        if (m_timeSinceEnergyGain > m_energyGainInterval && m_energy != m_maxEnergy && m_playerState != EplayerState.Dead)
         {
-            energy += m_energyGainAmount;
-            m_energyBar.UpdateResourceBar(energy, maxEnergy);
-            if  (energy > maxEnergy)
+            m_energy += m_energyGainAmount;
+            m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
+            if  (m_energy > m_maxEnergy)
             {
-                energy = maxEnergy;
+                m_energy = m_maxEnergy;
             }
             m_timeSinceEnergyGain = 0.0f;
             //print("Energy Updated - Player: " + PlayerNumber);
@@ -219,57 +209,24 @@ public class HeroController : MonoBehaviour, IDamageable
         //float inputX = Input.GetAxis("Horizontal");
 
         // Handle direction swap of character on movement direction
-        if (moveDir > 0)
+        if (m_moveDir > 0)
         {
             GetComponent<SpriteRenderer>().flipX = false; // flip sprite
             m_facingDirection = 1;
             m_attackSensor.transform.localPosition = m_attackSensorPosRight; // move attack sensor
         }
-        else if (moveDir < 0)
+        else if (m_moveDir < 0)
         {
             GetComponent<SpriteRenderer>().flipX = true; // flip sprite
             m_facingDirection = -1;
             m_attackSensor.transform.localPosition = m_attackSensorPosLeft; //move attack sensor
         }
 
-        // Move
-        //if (!m_rolling)
-        //    m_body2d.velocity = new UnityEngine.Vector2(inputX * m_speed, m_body2d.velocity.y);
-
         //Set AirSpeed in animator
         m_animator.SetFloat("AirSpeedY", m_body2d.velocity.y);
 
-        //// Block
-        //else if (Input.GetMouseButtonDown(1) && !m_rolling)
-        //{
-        //    m_animator.SetTrigger("Block");
-        //    m_animator.SetBool("IdleBlock", true);
-        //}
-
-        //else if (Input.GetMouseButtonUp(1))
-        //    m_animator.SetBool("IdleBlock", false);
-
-        // Roll
-        //else if (Input.GetKeyDown("left shift") && !m_rolling && !m_isWallSliding)
-        //{
-        //    m_rolling = true;
-        //    m_animator.SetTrigger("Roll");
-        //    m_body2d.velocity = new Vector2(m_facingDirection * m_rollForce, m_body2d.velocity.y);
-        //}
-
-
-        //Jump
-        //else if (Input.GetKeyDown("space") && m_grounded && !m_rolling)
-        //{
-        //    m_animator.SetTrigger("Jump");
-        //    m_grounded = false;
-        //    m_animator.SetBool("Grounded", m_grounded);
-        //    m_body2d.velocity = new Vector2(m_body2d.velocity.x, m_jumpForce);
-        //    m_groundSensor.Disable(0.2f);
-        //}
-
         //Run
-        if (Mathf.Abs(moveDir) > Mathf.Epsilon)
+        if (Mathf.Abs(m_moveDir) > Mathf.Epsilon)
         {
             // Reset timer
             m_delayToIdle = 0.05f;
@@ -286,28 +243,50 @@ public class HeroController : MonoBehaviour, IDamageable
         }
     }
 
-    // damage taken interface
+    public float m_lastDamageTaken;
+
+    // damage taken interface, check player state and 
     public void Damage(float damageAmount, GameObject attackerRef)
     {
-        print("controller Damaged " + playerState);
-        switch (playerState)
+        print("controller Damaged " + m_playerState);
+        switch (m_playerState)
         {
             case EplayerState.Default:
+                PlayerManager.Instance.CanClash();
+                m_lastDamageTaken = damageAmount;
                 TakeDamage(damageAmount);
                 break;
             case EplayerState.Attacking:
-                ClashReceive();
-                ClashSend(attackerRef); // calls clash receive on other character
-                Instantiate(m_blockFlash, this.transform.position + new Vector3(-0.2f, 0.7f, 0), UnityEngine.Quaternion.identity);
+                PlayerManager.Instance.CanClash();
+                m_lastDamageTaken = damageAmount;
                 TakeDamage(damageAmount);
+
+                //ClashReceive();
+                //ClashSend(attackerRef); // calls clash receive on other character
+                //Instantiate(m_blockFlash, this.transform.position + new Vector3(-0.2f, 0.7f, 0), UnityEngine.Quaternion.identity);
+                //TakeDamage(damageAmount);
                 break;
             case EplayerState.Blocking:
-                TakeDamage(damageAmount * blockMultiplier);
+                TakeDamage(damageAmount * m_blockMultiplier);
                 break;
             case EplayerState.Dead:
                 break;
         }
     }
+
+    public void ClashReceive()
+    {
+        m_body2d.AddForceX(m_clashForce * (m_facingDirection * -1)); // apply knockback
+        m_health += m_lastDamageTaken * m_clashDamageMultiplier;  // gain health back
+        Instantiate(m_blockFlash, this.transform.position + new Vector3(-0.2f, 0.7f, 0), UnityEngine.Quaternion.identity);
+        print("clashed Player" + PlayerNumber);
+    }
+
+    //public void ClashSend(GameObject attackRef)
+    //{
+    //    HeroController controller = gameObject.GetComponent<HeroController>();
+    //    controller.ClashReceive();
+    //}
 
     /// <summary>
     /// Handles damage taken and death when health reaches 0
@@ -315,31 +294,24 @@ public class HeroController : MonoBehaviour, IDamageable
     /// <param name="damageAmount"></param>
     private void TakeDamage(float damageAmount)
     {
-        if (health - damageAmount > 0)
+        if (m_health - damageAmount > 0)
         {
-            health -= damageAmount;
-            m_healthBar.UpdateResourceBar(health, maxHealth);
+            m_health -= damageAmount;
+            m_healthBar.UpdateResourceBar(m_health, m_maxHealth);
             m_animator.SetTrigger("Hurt");
-            print("Player" + PlayerNumber + " Damage Taken: " + damageAmount + " Health: " + health);
+            print("Player" + PlayerNumber + " Damage Taken: " + damageAmount + " Health: " + m_health);
         }
         else //Death
         {
-            playerState = EplayerState.Dead;
-            health = 0;
-            m_healthBar.UpdateResourceBar(health, maxHealth);
+            m_playerState = EplayerState.Dead;
+            m_health = 0;
+            m_healthBar.UpdateResourceBar(m_health, m_maxHealth);
             print("Player " + PlayerNumber + " is Dead");
             m_animator.SetBool("noBlood", m_noBlood);
             m_animator.SetTrigger("Death");
 
-            PlayerManager.S_PlayerManager.GameOver(PlayerNumber);
+            PlayerManager.Instance.GameOver(PlayerNumber);
         }
-            
-
-    }
-
-    public void Damage(float damageAmount, out GameObject objectRef)
-    {
-        throw new System.NotImplementedException();
     }
 
     // Animation Events

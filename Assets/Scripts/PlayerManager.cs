@@ -15,11 +15,15 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] Transform player2StartPositon;
 
     public List<HeroController> HeroControllers;
-    public static PlayerManager S_PlayerManager;
+    public static PlayerManager Instance;
+
+    private float m_clashWindowTimer;
+    private float m_clashWindowDuration = 0.5f;
+    public bool m_doClash = false;
 
     private void Awake()
     {
-        S_PlayerManager = this; // Set up singleton
+        Instance = this; // Set up singleton
     }
 
     public int PlayerJoined(HeroController playerCharacterRef)
@@ -35,7 +39,7 @@ public class PlayerManager : MonoBehaviour
             {
                 playerCharacterRef.transform.position = player2StartPositon.transform.position;
                 bannerText.text = "Fight!"; //update banner
-                foreach (HeroController controller in HeroControllers) { controller.canMove = true; } // enable movement for characters
+                foreach (HeroController controller in HeroControllers) { controller.m_canMove = true; } // enable movement for characters
             } 
             return HeroControllers.Count;
         }
@@ -55,6 +59,35 @@ public class PlayerManager : MonoBehaviour
         } else if (deadPlayerNumber == 2)
         {
             bannerText.text = "Player 1 Wins";
+        }
+    }
+
+    public void CanClash()
+    {
+        if (m_doClash)
+        {
+            foreach (HeroController controller in HeroControllers)
+            {
+                controller.ClashReceive();
+            }
+        } else
+        {
+            m_clashWindowTimer = 0;
+            m_doClash = true;
+        }
+
+    }
+
+    private void Update()
+    {
+        if (m_doClash)
+        {
+            m_clashWindowTimer += Time.deltaTime;
+            if (m_clashWindowTimer > m_clashWindowDuration)
+            {
+                m_doClash = false;
+                m_clashWindowTimer = 0;
+            }
         }
     }
 }

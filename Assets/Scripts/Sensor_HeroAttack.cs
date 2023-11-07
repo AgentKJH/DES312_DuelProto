@@ -15,6 +15,9 @@ public class Sensor_HeroAttack : MonoBehaviour
         attackCollider2D = GetComponent<Collider2D>();
     }
 
+    /// <summary>
+    ///  Checks overlapping colliders and calls IDamageable on HeroControllers
+    /// </summary>
     public void DoAttack()
     {
         Physics2D.OverlapCollider(attackCollider2D, overlappedList);
@@ -26,8 +29,9 @@ public class Sensor_HeroAttack : MonoBehaviour
                 IDamageable damageable = collider.gameObject.GetComponent<IDamageable>();
                 if (damageable != null)
                 {
-                    HeroController target = collider.GetComponent<HeroController>();
-                    target.Damage(20f, transform.parent.gameObject);
+                    damageable.Damage(20f, transform.parent.gameObject);
+                    //HeroController target = collider.GetComponent<HeroController>();
+                    //target.Damage(20f, transform.parent.gameObject);
                     print(transform.parent.gameObject.name);
                     //print("damage");
                 }
