@@ -983,7 +983,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Actions: {fileID: -944628639613478452, guid: 0c6ea261cb7c1a04090d9bb7dcde7031, type: 3}
-  m_NotificationBehavior: 0
+  m_NotificationBehavior: 2
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
@@ -997,13 +997,13 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 1
+      - m_Target: {fileID: 2691031742377028447}
+        m_TargetAssemblyTypeName: HeroController, Assembly-CSharp
+        m_MethodName: OnMovement
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -1012,7 +1012,19 @@ MonoBehaviour:
     m_ActionId: 50998941-aae9-4fef-b1c1-d8c0d0e1763f
     m_ActionName: 'Player/Movement[/Keyboard/a,/Keyboard/d,/DualSenseGamepadHID/leftStick/x]'
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2691031742377028447}
+        m_TargetAssemblyTypeName: HeroController, Assembly-CSharp
+        m_MethodName: OnAttack
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 4b731865-ab17-4334-bbba-228ecd120cd0
     m_ActionName: 'Player/Attack[/Keyboard/space,/DualSenseGamepadHID/buttonSouth,/DualSenseGamepadHID/buttonWest]'
   - m_PersistentCalls:
@@ -1067,6 +1079,22 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 39905ed2-f296-4a6d-a0cd-9ad7cdfbcf90
     m_ActionName: 'Player2Keyboard/PlayerJoinAction[/Keyboard/enter]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2691031742377028447}
+        m_TargetAssemblyTypeName: HeroController, Assembly-CSharp
+        m_MethodName: OnBlock
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: c1e0be83-7fe8-437d-adcf-f4be4d6fcf09
+    m_ActionName: 'Player/Block[/Keyboard/shift]'
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player

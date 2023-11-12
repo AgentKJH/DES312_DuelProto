@@ -34,8 +34,6 @@ public class HeroController : MonoBehaviour, IDamageable
     public bool m_might = false;
     public bool m_doClash = false;
 
-    private float m_energyAttackCost = 20f;
-    private float m_blockMultiplier = 0.1f;
     private float m_clashDamageMultiplier = 0.5f;
     private bool m_grounded = false;
     private int m_facingDirection = 1;
@@ -44,16 +42,24 @@ public class HeroController : MonoBehaviour, IDamageable
     // attack
     private int m_currentAttack = 0;
     private float m_timeSinceAttack = 0.0f;
+    private float m_energyAttackCost = 20f;
+
 
     // energy
     private float m_timeSinceEnergyGain = 0.0f;
     private float m_energyGainInterval = 0.5f;
     private float m_energyGainAmount = 5f;
-    
+
+    // block 
+    private float m_blockDamageMultiplier = 0.5f;
+    private float m_blockEnergyDamageMultiplier = 2f;
+
 
     private float m_delayToIdle = 0.0f;
-    private float m_rollDuration = 8.0f / 14.0f;
-    private float m_rollCurrentTime;
+
+    // roll
+    //private float m_rollDuration = 8.0f / 14.0f;
+    //private float m_rollCurrentTime;
 
     // compoent refs
     private Animator            m_animator;
@@ -62,6 +68,7 @@ public class HeroController : MonoBehaviour, IDamageable
     private Sensor_HeroAttack   m_attackSensor;
     [SerializeField] ResourceBar m_healthBar;
     [SerializeField] ResourceBar m_energyBar;
+
     //private bool                m_isWallSliding = false;
     private bool                m_rolling = false;
 
@@ -105,11 +112,11 @@ public class HeroController : MonoBehaviour, IDamageable
     /// Gets movement value from Movement Input Action
     /// </summary>
     /// <param name="value"></param>
-    void OnMovement(InputValue value)
+    public void OnMovement(InputAction.CallbackContext context)
     {
         if (m_playerState == EplayerState.Default && m_canMove) // Sets movement value when playerState is Default
         {
-            m_moveDir = value.Get<float>();
+            m_moveDir = context.ReadValue<float>();
             m_moveVector = new Vector2(m_moveDir * m_speed, m_body2d.velocity.y); 
             m_playerState = EplayerState.Default;
         }
@@ -118,9 +125,9 @@ public class HeroController : MonoBehaviour, IDamageable
     /// <summary>
     /// Called by Attack Input Action
     /// </summary>
-    void OnAttack()
+    public void OnAttack()
     {
-        if (m_timeSinceAttack > 0.25f && m_playerState != EplayerState.Dead && m_energy - m_energyAttackCost > -0.1f)
+        if (m_timeSinceAttack > 0.25f && m_playerState != EplayerState.Dead && m_playerState != EplayerState.Blocking && m_energy - m_energyAttackCost > -0.1f)
         {
             m_energy -= m_energyAttackCost;
             m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
@@ -144,7 +151,33 @@ public class HeroController : MonoBehaviour, IDamageable
         }
     }
 
+    /// <summary>
+    /// Called by Block Input Action
+    /// </summary>
+    public void OnBlock(InputAction.CallbackContext context)
+    {
 
+        switch (context.phase)
+        {
+            case InputActionPhase.Performed:
+                print("Performed");
+                break;
+            case InputActionPhase.Started:
+                print("Started");
+                if (m_playerState == EplayerState.Default)
+                {
+                    m_playerState = EplayerState.Blocking;
+                    m_animator.SetBool("IdleBlock", true);
+                }
+                break;
+            case InputActionPhase.Canceled:
+                print("Canceled");
+                m_playerState = EplayerState.Default;
+                m_animator.SetBool("IdleBlock", false);
+                break;
+        }
+
+    }
 
     private void FixedUpdate()
     {
@@ -182,12 +215,11 @@ public class HeroController : MonoBehaviour, IDamageable
         }
 
         // Increase timer that checks roll duration
-        if (m_rolling)
-            m_rollCurrentTime += Time.deltaTime;
-
+        //if (m_rolling)
+        //    m_rollCurrentTime += Time.deltaTime;
         // Disable rolling if timer extends duration
-        if (m_rollCurrentTime > m_rollDuration)
-            m_rolling = false;
+        //if (m_rollCurrentTime > m_rollDuration)
+        //    m_rolling = false;
 
         //Check if character just landed on the ground
         if (!m_grounded && m_groundSensor.State())
@@ -267,7 +299,20 @@ public class HeroController : MonoBehaviour, IDamageable
                 //TakeDamage(damageAmount);
                 break;
             case EplayerState.Blocking:
-                TakeDamage(damageAmount * m_blockMultiplier);
+                if (m_energy - (damageAmount * m_blockEnergyDamageMultiplier) >= 0)
+                {
+                    m_energy -= damageAmount * m_blockEnergyDamageMultiplier;
+                    m_animator.SetTrigger("Block");
+
+                }
+                else
+                {
+                    float adjustedDamage = (damageAmount * m_blockEnergyDamageMultiplier) - m_energy;
+                    m_energy = 0;
+                    m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
+                    TakeDamage(adjustedDamage * m_blockDamageMultiplier);
+                }
+                //m_animator.SetTrigger("Block");
                 break;
             case EplayerState.Dead:
                 break;

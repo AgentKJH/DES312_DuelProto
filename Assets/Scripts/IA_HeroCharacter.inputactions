@@ -31,6 +31,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Block",
+                    "type": "Button",
+                    "id": "c1e0be83-7fe8-437d-adcf-f4be4d6fcf09",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "Hold",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -91,17 +100,6 @@
                 },
                 {
                     "name": "",
-                    "id": "f6a61cc1-177f-4e76-bd60-261a2fc91bc8",
-                    "path": "<Gamepad>/buttonSouth",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Gamepad",
-                    "action": "Attack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "bd9bbe60-d397-49c7-bb34-48bd24983adc",
                     "path": "<Gamepad>/buttonWest",
                     "interactions": "",
@@ -130,6 +128,28 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "PlayerJoinAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b1e7b136-5681-45c5-bdd7-ce2720e61e70",
+                    "path": "<Keyboard>/shift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Block",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "63df8bb7-2826-46ef-8f44-bd391bdfa72d",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Block",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
