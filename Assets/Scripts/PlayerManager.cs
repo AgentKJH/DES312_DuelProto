@@ -113,6 +113,17 @@ public class PlayerManager : MonoBehaviour
 
     }
 
+    public void BlockClash(int playerNumber)
+    {
+        if (playerNumber == 1)
+        {
+            HeroControllers[1].ClashReceive();
+        } else if (playerNumber == 2)
+        {
+            HeroControllers[0].ClashReceive();
+        }
+    }
+
     private void Update()
     {
         if (m_doClash)

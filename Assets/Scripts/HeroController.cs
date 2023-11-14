@@ -174,14 +174,14 @@ public class HeroController : MonoBehaviour, IDamageable
     /// </summary>
     public void OnBlock(InputAction.CallbackContext context)
     {
-
+        // disable movement bugg
         switch (context.phase)
         {
             case InputActionPhase.Performed:
                 //print("Performed");
                 break;
             case InputActionPhase.Started:
-                //print("Started");
+                print("Started");
                 if (m_playerState == EplayerState.Default)
                 {
                     if (d_trackData) { d_blocks++; } // track action
@@ -190,7 +190,7 @@ public class HeroController : MonoBehaviour, IDamageable
                 }
                 break;
             case InputActionPhase.Canceled:
-                //print("Canceled");
+                print("Canceled");
                 m_playerState = EplayerState.Default;
                 m_animator.SetBool("IdleBlock", false);
                 break;
@@ -366,6 +366,7 @@ public class HeroController : MonoBehaviour, IDamageable
                 {
                     if (d_trackData) { d_totalEnergyUsed += damageAmount * m_blockEnergyDamageMultiplier; } // track energy lost
                     m_energy -= damageAmount * m_blockEnergyDamageMultiplier;
+                    PlayerManager.Instance.BlockClash(PlayerNumber);
                     m_animator.SetTrigger("Block");
                 }
                 else
