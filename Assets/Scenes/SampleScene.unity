@@ -390,6 +390,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerManager
       objectReference: {fileID: 0}
+    - target: {fileID: 6210117409571878214, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
+      propertyPath: m_AllowJoining
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8273285605179694519, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
       propertyPath: bannerText
       value: 

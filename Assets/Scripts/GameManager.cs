@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Abertay.Analytics;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,6 +18,11 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    public void SendGameData(string eventname, Dictionary<string, object> data)
+    {
+        AnalyticsManager.SendCustomEvent(eventname, data);
     }
 
     public void LoadScene(string sceneName)

@@ -1,30 +1,49 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Numerics;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
-using Unity.VisualScripting;
-using UnityEditor;
-using NUnit.Framework.Constraints;
 
 public class HeroController : MonoBehaviour, IDamageable
 {
-
-    [SerializeField] float      m_speed = 4.0f;
-    //[SerializeField] float      m_jumpForce = 7.5f;
-    //[SerializeField] float      m_rollForce = 6.0f;
-    [SerializeField] bool       m_noBlood = false;
-    [SerializeField] GameObject m_blockFlash;
-
+    // ++ Refs ++
     // Attack Sensor postion vars
     private Vector3 m_attackSensorPosRight = new Vector3(0.915000021f, 0.722000003f, 0);
     private Vector3 m_attackSensorPosLeft = new Vector3(-0.984000027f, 0.722000003f, 0);
 
+    [SerializeField] GameObject m_blockFlash; //flash asset
+
+    // component refs
+    private Animator m_animator;
+    private Rigidbody2D m_body2d;
+    private Sensor_HeroKnight m_groundSensor;
+    private Sensor_HeroAttack m_attackSensor;
+    [SerializeField] ResourceBar m_healthBar;
+    [SerializeField] ResourceBar m_energyBar;
+
+    // ++ Player stats ++
     public int PlayerNumber;
+    public bool d_trackData = false;
+
+    // ++ Player Stat Trackers ++
+    /// <summary>
+    /// Tracks the number of times the action was taken
+    /// </summary>
+    int d_attacks = 0, d_blocks = 0, d_hits = 0, d_blockedHits = 0;
+    float d_totalEnergyUsed = 0, d_totalEnergyGenerated = 0, d_energyAverage = 0;
+    float d_totalDistanceTraveled = 0;
+    
+    public Dictionary<string, object> HeroDuelData = new Dictionary<string, object>();
+
+
+    /// <summary>
+    /// Stores previous player location for total distance traveled calculation
+    /// </summary>
+    Vector2 d_previousLocation;
+
 
     // ++ character stats ++
-    // public
+    // public stats
     public EplayerState m_playerState = EplayerState.Default;
     public float m_damage = 20f;
     public float m_maxHealth = 100f;
@@ -34,10 +53,20 @@ public class HeroController : MonoBehaviour, IDamageable
     public bool m_might = false;
     public bool m_doClash = false;
 
+    [SerializeField] float m_speed = 4.0f;
+    //[SerializeField] float      m_jumpForce = 7.5f;
+    //[SerializeField] float      m_rollForce = 6.0f;
+    [SerializeField] bool m_noBlood = false;
+
     private float m_clashDamageMultiplier = 0.5f;
     private bool m_grounded = false;
     private int m_facingDirection = 1;
     private float m_clashForce = 5000f;
+
+    // movement
+    private float m_moveDir;
+    private Vector2 m_moveVector;
+    public bool m_canMove = true;
 
     // attack
     private int m_currentAttack = 0;
@@ -60,23 +89,9 @@ public class HeroController : MonoBehaviour, IDamageable
     // roll
     //private float m_rollDuration = 8.0f / 14.0f;
     //private float m_rollCurrentTime;
+    private bool m_rolling = false;
 
-    // compoent refs
-    private Animator            m_animator;
-    private Rigidbody2D         m_body2d;
-    private Sensor_HeroKnight   m_groundSensor;
-    private Sensor_HeroAttack   m_attackSensor;
-    [SerializeField] ResourceBar m_healthBar;
-    [SerializeField] ResourceBar m_energyBar;
-
-    //private bool                m_isWallSliding = false;
-    private bool                m_rolling = false;
-
-
-    // Movement var
-    private float m_moveDir;
-    private Vector2 m_moveVector;
-    public bool m_canMove;
+    //private bool m_isWallSliding = false;
    
 
     /// <summary>
@@ -127,8 +142,11 @@ public class HeroController : MonoBehaviour, IDamageable
     /// </summary>
     public void OnAttack()
     {
-        if (m_timeSinceAttack > 0.25f && m_playerState != EplayerState.Dead && m_playerState != EplayerState.Blocking && m_energy - m_energyAttackCost > -0.1f)
+        if (m_timeSinceAttack > 0.25f && m_playerState != EplayerState.Dead && m_playerState != EplayerState.Blocking && m_energy - m_energyAttackCost >= 0f)
         {
+            if (d_trackData) { d_attacks++; d_totalEnergyUsed += m_energyAttackCost; } // track attack action and energy used 
+            
+
             m_energy -= m_energyAttackCost;
             m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
             m_currentAttack++;
@@ -160,18 +178,19 @@ public class HeroController : MonoBehaviour, IDamageable
         switch (context.phase)
         {
             case InputActionPhase.Performed:
-                print("Performed");
+                //print("Performed");
                 break;
             case InputActionPhase.Started:
-                print("Started");
+                //print("Started");
                 if (m_playerState == EplayerState.Default)
                 {
+                    if (d_trackData) { d_blocks++; } // track action
                     m_playerState = EplayerState.Blocking;
                     m_animator.SetBool("IdleBlock", true);
                 }
                 break;
             case InputActionPhase.Canceled:
-                print("Canceled");
+                //print("Canceled");
                 m_playerState = EplayerState.Default;
                 m_animator.SetBool("IdleBlock", false);
                 break;
@@ -179,11 +198,47 @@ public class HeroController : MonoBehaviour, IDamageable
 
     }
 
+    // ++ Data Collection ++
+
+    /// <summary>
+    /// Updated d_totalDistanceTraveled for data collection
+    /// </summary>
+    void RecordDistance()
+    {
+        d_totalDistanceTraveled += Vector2.Distance(transform.position, d_previousLocation);
+        d_previousLocation = transform.position;
+    }
+
+    /// <summary>
+    /// Stops tracking data and stores all character data in the HeroDuelData Dictionary
+    /// </summary>
+    public void StoreData()
+    {
+        d_trackData = false; // stop tracking data
+
+        HeroDuelData.Add("PlayerNumber", PlayerNumber);
+        HeroDuelData.Add("NumberOfAttacksInput", d_attacks);
+        HeroDuelData.Add("NumberOfBlocksInput", d_blocks);
+        HeroDuelData.Add("NumberOfHitsBlocked", d_blockedHits);
+        HeroDuelData.Add("NumberOfHitsTaken", d_hits);
+        HeroDuelData.Add("TotalEnergyUsed", d_totalEnergyUsed);
+        HeroDuelData.Add("TotalEnergyGenerated", d_totalEnergyGenerated);
+        d_energyAverage = d_totalEnergyUsed / PlayerManager.Instance.d_totalDuelTime; // calculate average energy used
+        HeroDuelData.Add("AverageEnergyUsed", d_energyAverage);
+        HeroDuelData.Add("TotalDistanceTraveled", d_totalDistanceTraveled);
+
+        GameManager.Instance.SendGameData("PlayerDuelOverData", HeroDuelData);
+    }
+
+
+    // ++ Updates ++
     private void FixedUpdate()
     {
         // Movement 
         if (m_playerState == EplayerState.Default)
         {
+            if (d_trackData) { RecordDistance(); } // track action
+
             m_body2d.MovePosition(m_body2d.position + m_moveVector * Time.fixedDeltaTime);
         } else m_body2d.velocity = Vector2.zero; // Stops velocity if not in default state
     }
@@ -204,13 +259,19 @@ public class HeroController : MonoBehaviour, IDamageable
         // energy regen
         if (m_timeSinceEnergyGain > m_energyGainInterval && m_energy != m_maxEnergy && m_playerState != EplayerState.Dead)
         {
-            m_energy += m_energyGainAmount;
-            m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
-            if  (m_energy > m_maxEnergy)
+            if (m_energy + m_energyGainAmount >= m_maxEnergy)
             {
-                m_energy = m_maxEnergy;
+                d_totalEnergyGenerated += (m_maxEnergy - m_energy); // add remainder energy to tracker
+                m_energy = m_maxEnergy; // set energy value to max
+                m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy); // update energy bar UI element
             }
-            m_timeSinceEnergyGain = 0.0f;
+            else
+            {
+                d_totalEnergyGenerated += m_energyGainAmount; // add gained energy to tracker
+                m_energy += m_energyGainAmount; // update energy value
+                m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy); // update energy bar UI element
+            }
+            m_timeSinceEnergyGain = 0.0f; // reset time since last energy update
             //print("Energy Updated - Player: " + PlayerNumber);
         }
 
@@ -281,15 +342,16 @@ public class HeroController : MonoBehaviour, IDamageable
     public void Damage(float damageAmount, GameObject attackerRef)
     {
         print("controller Damaged " + m_playerState);
+        if (d_trackData && m_playerState != EplayerState.Dead) { d_hits++; } // track action
         switch (m_playerState)
         {
             case EplayerState.Default:
-                PlayerManager.Instance.CanClash();
+                PlayerManager.Instance.CanClash(PlayerNumber);
                 m_lastDamageTaken = damageAmount;
                 TakeDamage(damageAmount);
                 break;
             case EplayerState.Attacking:
-                PlayerManager.Instance.CanClash();
+                PlayerManager.Instance.CanClash(PlayerNumber);
                 m_lastDamageTaken = damageAmount;
                 TakeDamage(damageAmount);
 
@@ -299,15 +361,17 @@ public class HeroController : MonoBehaviour, IDamageable
                 //TakeDamage(damageAmount);
                 break;
             case EplayerState.Blocking:
+                if(d_trackData) { d_blockedHits++; } // track action
                 if (m_energy - (damageAmount * m_blockEnergyDamageMultiplier) >= 0)
                 {
+                    if (d_trackData) { d_totalEnergyUsed += damageAmount * m_blockEnergyDamageMultiplier; } // track energy lost
                     m_energy -= damageAmount * m_blockEnergyDamageMultiplier;
                     m_animator.SetTrigger("Block");
-
                 }
                 else
                 {
                     float adjustedDamage = (damageAmount * m_blockEnergyDamageMultiplier) - m_energy;
+                    if (d_trackData) { d_totalEnergyUsed += m_energy; } // track energy lost
                     m_energy = 0;
                     m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
                     TakeDamage(adjustedDamage * m_blockDamageMultiplier);
@@ -348,6 +412,8 @@ public class HeroController : MonoBehaviour, IDamageable
         }
         else //Death
         {
+            PlayerManager.Instance.DuelOver(PlayerNumber);
+
             m_playerState = EplayerState.Dead;
             m_health = 0;
             m_healthBar.UpdateResourceBar(m_health, m_maxHealth);
@@ -355,7 +421,6 @@ public class HeroController : MonoBehaviour, IDamageable
             m_animator.SetBool("noBlood", m_noBlood);
             m_animator.SetTrigger("Death");
 
-            PlayerManager.Instance.GameOver(PlayerNumber);
         }
     }
 
