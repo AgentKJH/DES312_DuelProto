@@ -366,6 +366,7 @@ public class HeroController : MonoBehaviour, IDamageable
                 {
                     if (d_trackData) { d_totalEnergyUsed += damageAmount * m_blockEnergyDamageMultiplier; } // track energy lost
                     m_energy -= damageAmount * m_blockEnergyDamageMultiplier;
+                    m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
                     PlayerManager.Instance.BlockClash(PlayerNumber);
                     m_animator.SetTrigger("Block");
                 }

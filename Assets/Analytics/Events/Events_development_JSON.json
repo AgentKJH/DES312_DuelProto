@@ -526,5 +526,53 @@
       "TotalDuelTime": 36.6364,
       "NumberOfClashes": 8
     }
+  },
+  {
+    "eventTimestamp": "15/11/2023 16:50:49",
+    "userID": "NULL",
+    "eventName": "PlayerDuelOverData",
+    "eventUUID": "1577e039beee630c20f80a54d57754d1",
+    "GA_Value": 0.0,
+    "eventParams": {
+      "PlayerNumber": 1,
+      "NumberOfAttacksInput": 6,
+      "NumberOfBlocksInput": 7,
+      "NumberOfHitsBlocked": 2,
+      "NumberOfHitsTaken": 3,
+      "TotalEnergyUsed": 200.0,
+      "TotalEnergyGenerated": 145.0,
+      "AverageEnergyUsed": 10.073391,
+      "TotalDistanceTraveled": 32.1793556
+    }
+  },
+  {
+    "eventTimestamp": "15/11/2023 16:50:49",
+    "userID": "NULL",
+    "eventName": "PlayerDuelOverData",
+    "eventUUID": "1577e039beee630c20f80a54d57754d1",
+    "GA_Value": 0.0,
+    "eventParams": {
+      "PlayerNumber": 2,
+      "NumberOfAttacksInput": 10,
+      "NumberOfBlocksInput": 1,
+      "NumberOfHitsBlocked": 0,
+      "NumberOfHitsTaken": 5,
+      "TotalEnergyUsed": 200.0,
+      "TotalEnergyGenerated": 150.0,
+      "AverageEnergyUsed": 10.073391,
+      "TotalDistanceTraveled": 50.7228
+    }
+  },
+  {
+    "eventTimestamp": "15/11/2023 16:50:50",
+    "userID": "NULL",
+    "eventName": "DuelOverData",
+    "eventUUID": "72c1e9d3d286f4f4890974ec0e90413c",
+    "GA_Value": 0.0,
+    "eventParams": {
+      "PlayerDefeated": 2,
+      "TotalDuelTime": 19.8542881,
+      "NumberOfClashes": 0
+    }
   }
 ]
