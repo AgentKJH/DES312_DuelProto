@@ -11,7 +11,8 @@ public class HeroController : MonoBehaviour, IDamageable
     private Vector3 m_attackSensorPosRight = new Vector3(0.915000021f, 0.722000003f, 0);
     private Vector3 m_attackSensorPosLeft = new Vector3(-0.984000027f, 0.722000003f, 0);
 
-    [SerializeField] GameObject m_blockFlash; //flash asset
+    //flash asset
+    [SerializeField] GameObject m_blockFlash;
 
     // component refs
     private Animator m_animator;
@@ -87,12 +88,15 @@ public class HeroController : MonoBehaviour, IDamageable
     private float m_delayToIdle = 0.0f;
 
     // roll
-    //private float m_rollDuration = 8.0f / 14.0f;
-    //private float m_rollCurrentTime;
-    private bool m_rolling = false;
+    private float m_rollDuration = 8.0f / 14.0f;
+    private float m_rollCurrentTime;
+    private float m_rollEnergyCost = 20f;
+    private float m_rollForce = 6f;
+
+    //private bool m_rolling = false;
 
     //private bool m_isWallSliding = false;
-   
+
 
     /// <summary>
     /// Enum for tracking player state
@@ -102,6 +106,8 @@ public class HeroController : MonoBehaviour, IDamageable
         Default,
         Attacking,
         Blocking,
+        Rolling,
+        Vulnerable,
         Dead
     }
 
@@ -129,12 +135,8 @@ public class HeroController : MonoBehaviour, IDamageable
     /// <param name="value"></param>
     public void OnMovement(InputAction.CallbackContext context)
     {
-        if (m_playerState == EplayerState.Default && m_canMove) // Sets movement value when playerState is Default
-        {
-            m_moveDir = context.ReadValue<float>();
-            m_moveVector = new Vector2(m_moveDir * m_speed, m_body2d.velocity.y); 
-            m_playerState = EplayerState.Default;
-        }
+        m_moveDir = context.ReadValue<float>();
+        m_moveVector = new Vector2(m_moveDir * m_speed, m_body2d.velocity.y);
     }
 
     /// <summary>
@@ -145,7 +147,6 @@ public class HeroController : MonoBehaviour, IDamageable
         if (m_timeSinceAttack > 0.25f && m_playerState != EplayerState.Dead && m_playerState != EplayerState.Blocking && m_energy - m_energyAttackCost >= 0f)
         {
             if (d_trackData) { d_attacks++; d_totalEnergyUsed += m_energyAttackCost; } // track attack action and energy used 
-            
 
             m_energy -= m_energyAttackCost;
             m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
@@ -198,6 +199,20 @@ public class HeroController : MonoBehaviour, IDamageable
 
     }
 
+    public void OnRoll(InputAction.CallbackContext context)
+    {
+        if (m_playerState == EplayerState.Default && m_energy - m_rollEnergyCost >= 0)
+        {
+            m_playerState = EplayerState.Rolling;
+            m_animator.SetTrigger("Roll");
+            m_body2d.velocity = new Vector2(m_facingDirection * m_rollForce, m_body2d.velocity.y);
+            // update energy
+            m_energy -= m_rollEnergyCost;
+            m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
+        }
+       
+    }
+
     // ++ Data Collection ++
 
     /// <summary>
@@ -235,26 +250,43 @@ public class HeroController : MonoBehaviour, IDamageable
     private void FixedUpdate()
     {
         // Movement 
-        if (m_playerState == EplayerState.Default)
+        if (m_playerState == EplayerState.Default && m_canMove)
         {
             if (d_trackData) { RecordDistance(); } // track action
 
             m_body2d.MovePosition(m_body2d.position + m_moveVector * Time.fixedDeltaTime);
-        } else m_body2d.velocity = Vector2.zero; // Stops velocity if not in default state
+        }
+        else if (m_playerState != EplayerState.Rolling)
+        {
+            m_body2d.velocity = Vector2.zero; // Stops velocity if not in default state
+        }
     }
 
     //Update is called once per frame
     void Update()
     {
-        // Increase timer that controls attack combo
-        m_timeSinceAttack += Time.deltaTime;
-        m_timeSinceEnergyGain += Time.deltaTime;
+        m_timeSinceAttack += Time.deltaTime; // Increase timer that controls attack combo
+        m_timeSinceEnergyGain += Time.deltaTime; // Increase timer that controls energy gain delay
 
-        if (m_timeSinceAttack > 0.15 && m_playerState == EplayerState.Attacking)
+        if (m_timeSinceAttack > 0.15 && m_playerState == EplayerState.Attacking) // Set player state back to default after 
         {
             m_playerState = EplayerState.Default;
         }
-        
+
+
+        // ++ Rolling ++
+        // Increase timer that checks roll duration
+        if (m_playerState == EplayerState.Rolling)
+        {
+            m_rollCurrentTime += Time.deltaTime;
+        }
+        // Disable rolling if timer extends duration
+        if (m_rollCurrentTime > m_rollDuration)
+        {
+            m_playerState = EplayerState.Default;
+            m_rollCurrentTime = 0;
+        }
+            
 
         // energy regen
         if (m_timeSinceEnergyGain > m_energyGainInterval && m_energy != m_maxEnergy && m_playerState != EplayerState.Dead)
@@ -341,7 +373,7 @@ public class HeroController : MonoBehaviour, IDamageable
     // damage taken interface, check player state and 
     public void Damage(float damageAmount, GameObject attackerRef)
     {
-        print("controller Damaged " + m_playerState);
+        //print("controller Damaged " + m_playerState);
         if (d_trackData && m_playerState != EplayerState.Dead) { d_hits++; } // track action
         switch (m_playerState)
         {

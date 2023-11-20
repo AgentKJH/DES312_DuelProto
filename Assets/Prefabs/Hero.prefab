@@ -829,10 +829,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d16ed7ed5361ba4f995abfad3df6ac2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_speed: 4
-  m_noBlood: 0
   m_blockFlash: {fileID: 8690950337773083281, guid: 803b96fa8ebd5a749bdf32bd0e553139, type: 3}
+  m_healthBar: {fileID: 9039057019500721806}
+  m_energyBar: {fileID: 7269321164006623425}
   PlayerNumber: 0
+  d_trackData: 0
   m_playerState: 0
   m_damage: 20
   m_maxHealth: 100
@@ -841,8 +842,8 @@ MonoBehaviour:
   m_energy: 100
   m_might: 0
   m_doClash: 0
-  m_healthBar: {fileID: 9039057019500721806}
-  m_energyBar: {fileID: 7269321164006623425}
+  m_speed: 4
+  m_noBlood: 0
   m_canMove: 0
   m_lastDamageTaken: 0
 --- !u!212 &2954181336601895002
@@ -1095,6 +1096,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: c1e0be83-7fe8-437d-adcf-f4be4d6fcf09
     m_ActionName: 'Player/Block[/Keyboard/shift]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2691031742377028447}
+        m_TargetAssemblyTypeName: HeroController, Assembly-CSharp
+        m_MethodName: OnRoll
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 6e303f0a-e261-469b-afb1-3672e218ad7f
+    m_ActionName: 'Player/Roll[/Keyboard/shift]'
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
