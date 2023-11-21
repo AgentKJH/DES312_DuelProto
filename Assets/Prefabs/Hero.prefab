@@ -830,8 +830,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_blockFlash: {fileID: 8690950337773083281, guid: 803b96fa8ebd5a749bdf32bd0e553139, type: 3}
+  m_SpriteDefaultMaterial: {fileID: 2100000, guid: 5dfd5dc7d51e95943bce1272ceccc2c2, type: 2}
+  m_SpriteFlashMaterial: {fileID: 2100000, guid: 1e0116fe039ba6f4087eb87d451cb10a, type: 2}
   m_healthBar: {fileID: 9039057019500721806}
   m_energyBar: {fileID: 7269321164006623425}
+  m_spriteRenderer: {fileID: 2954181336601895002}
   PlayerNumber: 0
   d_trackData: 0
   m_playerState: 0
@@ -842,9 +845,9 @@ MonoBehaviour:
   m_energy: 100
   m_might: 0
   m_doClash: 0
+  m_lockPlayer: 0
   m_speed: 4
   m_noBlood: 0
-  m_canMove: 0
   m_lastDamageTaken: 0
 --- !u!212 &2954181336601895002
 SpriteRenderer:
@@ -866,7 +869,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 5dfd5dc7d51e95943bce1272ceccc2c2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

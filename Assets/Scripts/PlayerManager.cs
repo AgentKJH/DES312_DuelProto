@@ -18,7 +18,7 @@ public class PlayerManager : MonoBehaviour
     public static PlayerManager Instance;
 
     private float m_clashWindowTimer;
-    private float m_clashWindowDuration = 0.5f;
+    private float m_clashWindowDuration = 0.15f;
     public bool m_doClash = false;
 
     // data
@@ -45,7 +45,7 @@ public class PlayerManager : MonoBehaviour
             if (HeroControllers.Count == 2) 
             {
                 playerCharacterRef.transform.position = player2StartPositon.transform.position;
-                foreach (HeroController controller in HeroControllers) { controller.m_canMove = false; } // enable movement for characters
+                foreach (HeroController controller in HeroControllers) { controller.m_playerUnlocked = false; } // disenables movement for characters
                 Invoke("StartGame", 0.5f); // start game with a short delay
             } 
             return HeroControllers.Count;
@@ -66,7 +66,7 @@ public class PlayerManager : MonoBehaviour
         HeroControllers[0].transform.position = player1StartPositon.transform.position;
         HeroControllers[1].transform.position = player2StartPositon.transform.position;
         d_PMtrackData = true;
-        foreach (HeroController controller in HeroControllers) { controller.m_canMove = true; controller.d_trackData = true;  } // enable movement and start tracking data on each character
+        foreach (HeroController controller in HeroControllers) { controller.m_playerUnlocked = true; controller.d_trackData = true;  } // enable movement and start tracking data on each character
         bannerText.text = "Fight!"; //update banner
     }
 
@@ -113,6 +113,10 @@ public class PlayerManager : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Takes in the playerNumber and calls ClashReceive on the other player
+    /// </summary>
+    /// <param name="playerNumber"></param>
     public void BlockClash(int playerNumber)
     {
         if (playerNumber == 1)
