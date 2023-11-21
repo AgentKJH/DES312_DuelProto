@@ -43,7 +43,7 @@ public class HeroController : MonoBehaviour, IDamageable
     /// </summary>
     Vector2 d_previousLocation;
 
-    // ++ character stats ++ ----------------------------------------------------------------------------------
+    // ++ Character Stats ++ ----------------------------------------------------------------------------------
     // public stats
     public EplayerState m_playerState = EplayerState.Default;
     public float m_damage = 20f;
@@ -81,6 +81,7 @@ public class HeroController : MonoBehaviour, IDamageable
     private float m_blockDamageMultiplier = 0.5f;
     private float m_blockEnergyDamageMultiplier = 2f;
     private bool m_didBlockAttack = false;
+    private float m_blockDelay;
 
     // roll
     private float m_rollDuration = 8.0f / 14.0f;
@@ -172,6 +173,7 @@ public class HeroController : MonoBehaviour, IDamageable
     /// </summary>
     public void OnBlock(InputAction.CallbackContext context)
     {
+        bool blockExcuted = false;
         if (m_playerUnlocked)
         {
             switch (context.phase)
@@ -181,11 +183,12 @@ public class HeroController : MonoBehaviour, IDamageable
                     break;
                 case InputActionPhase.Started:
                     //print("Started");
-                    if (m_playerState == EplayerState.Default)
+                    if (m_playerState == EplayerState.Default && m_blockDelay <= 0)
                     {
                         if (d_trackData) { d_blocks++; } // track action
                         m_didBlockAttack = false;
                         m_playerState = EplayerState.Blocking;
+                        blockExcuted = true;
                         m_animator.SetBool("IdleBlock", true);
                     }
                     break;
@@ -195,6 +198,11 @@ public class HeroController : MonoBehaviour, IDamageable
                     {
                         m_playerState = EplayerState.Default;
                         m_animator.SetBool("IdleBlock", false);
+                        if (blockExcuted)
+                        {
+                            m_blockDelay = 0.3f;
+                        }
+
                     }
                     else
                     {
@@ -280,8 +288,15 @@ public class HeroController : MonoBehaviour, IDamageable
 
         if (m_timeSinceAttack > 0.15 && m_playerState == EplayerState.Attacking) // Set player state back to default after 
         {
-            m_playerState = EplayerState.Default;
+            if (m_playerState != EplayerState.Dead)
+            {
+                m_playerState = EplayerState.Default;
+
+            }
         }
+
+        // count down block delay when greater than 0
+        if (m_blockDelay > 0) { m_blockDelay -= Time.deltaTime; }
 
         // vulernable time update
         if (m_playerState == EplayerState.Vulnerable)
@@ -289,7 +304,7 @@ public class HeroController : MonoBehaviour, IDamageable
             m_vulnerableTime -= Time.deltaTime;
             if (m_vulnerableTime <= 0)
             {
-                m_playerState = EplayerState.Default;
+                if (m_playerState != EplayerState.Dead) { m_playerState = EplayerState.Default; }
                 m_spriteRenderer.material = m_SpriteDefaultMaterial;
             }
         }
@@ -438,10 +453,6 @@ public class HeroController : MonoBehaviour, IDamageable
 
                     TakeDamage(adjustedDamage * m_blockDamageMultiplier); // take adjusted damage
                 }
-                break;
-            case EplayerState.Dead:
-                break;
-            case EplayerState.Rolling:
                 break;
             case EplayerState.Vulnerable:
                 TakeDamage(damageAmount * m_vulnerableDamageMultiplier);

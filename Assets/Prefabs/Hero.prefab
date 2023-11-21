@@ -845,7 +845,7 @@ MonoBehaviour:
   m_energy: 100
   m_might: 0
   m_doClash: 0
-  m_lockPlayer: 0
+  m_playerUnlocked: 1
   m_speed: 4
   m_noBlood: 0
   m_lastDamageTaken: 0
