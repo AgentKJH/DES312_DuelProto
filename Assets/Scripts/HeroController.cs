@@ -12,8 +12,7 @@ public class HeroController : MonoBehaviour, IDamageable
     private Vector3 m_attackSensorPosRight = new Vector3(0.915000021f, 0.722000003f, 0);
     private Vector3 m_attackSensorPosLeft = new Vector3(-0.984000027f, 0.722000003f, 0);
 
-    //flash asset
-    [SerializeField] GameObject m_blockFlash;
+    [SerializeField] GameObject m_blockFlash; //block flash asset
     [SerializeField] Material m_SpriteDefaultMaterial;
     [SerializeField] Material m_SpriteFlashMaterial;
 
@@ -25,6 +24,8 @@ public class HeroController : MonoBehaviour, IDamageable
     [SerializeField] ResourceBar m_healthBar;
     [SerializeField] ResourceBar m_energyBar;
     [SerializeField] SpriteRenderer m_spriteRenderer;
+    [SerializeField] GameObject m_iconObj;
+    [SerializeField] SpriteRenderer m_iconRenderer;
  
     // ++ Player stats ++ -------------------------------------------------------------------------------------
     public int PlayerNumber;
@@ -51,7 +52,6 @@ public class HeroController : MonoBehaviour, IDamageable
     public float m_health;
     public float m_maxEnergy = 100f;
     public float m_energy = 100f;
-    public bool m_might = false;
     public bool m_doClash = false;
     public bool m_playerUnlocked = true;
 
@@ -114,16 +114,45 @@ public class HeroController : MonoBehaviour, IDamageable
         // get component refs
         m_animator = GetComponent<Animator>();
         m_body2d = GetComponent<Rigidbody2D>();
+        
         m_groundSensor = transform.Find("GroundSensor").GetComponent<Sensor_HeroKnight>();
         m_attackSensor = GetComponentInChildren<Sensor_HeroAttack>();
 
+        CharacterSetup();       
+    }
+
+    private void CharacterSetup()
+    {
         // set starting stats
         m_health = m_maxHealth;
 
         // add player to player manager
-        PlayerNumber =  PlayerManager.Instance.PlayerJoined(this);
+        PlayerNumber = PlayerManager.Instance.PlayerJoined(this);
         gameObject.name = "Hero - Player" + PlayerNumber;
         print("Player Joined: Player " + PlayerNumber);
+
+        // Set up player direction
+        if (PlayerNumber == 1) 
+        {
+            m_facingDirection = 1;
+            m_attackSensor.transform.localPosition = m_attackSensorPosRight; // move attack sensor
+            m_healthBar.transform.localPosition = new Vector3(-112, 70, 0);
+            m_energyBar.transform.localPosition = new Vector3(-130, 70, 0);
+
+        }
+        else if (PlayerNumber == 2)
+        {
+            print("Player2 setup");
+            m_facingDirection = -1;
+            GetComponent<SpriteRenderer>().flipX = true; // flip sprite
+            m_attackSensor.transform.localPosition = m_attackSensorPosLeft; // move attack sensor
+            m_healthBar.transform.localPosition = new Vector3(112, 70, 0);
+            m_energyBar.transform.localPosition = new Vector3(130, 70, 0);
+        }
+        else
+        {
+            Debug.LogError("CharacterSetup/HeroController PlayerNumber is an unexpected value"); // log error
+        }
     }
 
     // ++ Inputs ++ --------------------------------------------------------------------------------------------
@@ -142,7 +171,7 @@ public class HeroController : MonoBehaviour, IDamageable
     /// </summary>
     public void OnAttack()
     {
-        if (m_timeSinceAttack > 0.25f && m_playerState == EplayerState.Default && m_energy - m_energyAttackCost >= 0f && m_playerUnlocked)
+        if (m_timeSinceAttack > 0.25f && m_playerState == EplayerState.Default && m_energy - m_energyAttackCost >= 0 && m_playerUnlocked)
         {
             if (d_trackData) { d_attacks++; d_totalEnergyUsed += m_energyAttackCost; } // track attack action and energy used 
 
@@ -165,7 +194,8 @@ public class HeroController : MonoBehaviour, IDamageable
 
             // Reset timer
             m_timeSinceAttack = 0.0f;
-        }
+        } else if (m_playerUnlocked && m_playerState == EplayerState.Default && m_timeSinceAttack > 0.25f) { m_energyBar.BackgroundFlash(0.1f); } // flash energy bar when not enough energy
+
     }
 
     /// <summary>
@@ -218,17 +248,22 @@ public class HeroController : MonoBehaviour, IDamageable
     /// Called by Roll Input Action. Handles Roll mechanic logic
     /// </summary>
     /// <param name="context"></param>
-    public void OnRoll(InputAction.CallbackContext context)
+    public void OnRoll()
     {
-        if (m_playerState == EplayerState.Default && m_energy - m_rollEnergyCost >= 0 && m_playerUnlocked)
+        int rollDir;
+        if (m_playerState == EplayerState.Default && m_energy - m_rollEnergyCost > 0 && m_playerUnlocked)
         {
             m_playerState = EplayerState.Rolling;
             m_animator.SetTrigger("Roll");
-            m_body2d.velocity = new Vector2(m_facingDirection * m_rollForce, m_body2d.velocity.y);
+            if (m_moveDir == 0) { rollDir = m_facingDirection * -1; } else if (m_moveDir > 0) { rollDir = 1; } else { rollDir = -1; } // set up roll direction based on movement direction input, if no input roll backwards.
+            m_body2d.velocity = new Vector2(rollDir * m_rollForce, m_body2d.velocity.y);
             // update energy
             m_energy -= m_rollEnergyCost;
             m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
-        }
+        } else if (m_playerUnlocked && m_playerState == EplayerState.Default) 
+        {
+            m_energyBar.BackgroundFlash(0.2f);  // flash energy bar when not enough energy
+        } 
        
     }
 
@@ -272,7 +307,7 @@ public class HeroController : MonoBehaviour, IDamageable
         {
             if (d_trackData) { RecordDistance(); } // track action
 
-            m_body2d.MovePosition(m_body2d.position + m_moveVector * Time.fixedDeltaTime);
+            m_body2d.MovePosition(m_body2d.position + m_moveVector * Time.fixedDeltaTime); // move character with rb
         }
         else if (m_playerState != EplayerState.Rolling)
         {
@@ -280,7 +315,8 @@ public class HeroController : MonoBehaviour, IDamageable
         }
     }
 
-    //Update is called once per frame
+    bool setVulerableFromEnergy = false;
+
     void Update()
     {
         m_timeSinceAttack += Time.deltaTime; // Increase timer that controls attack combo
@@ -295,21 +331,33 @@ public class HeroController : MonoBehaviour, IDamageable
             }
         }
 
-        // count down block delay when greater than 0
-        if (m_blockDelay > 0) { m_blockDelay -= Time.deltaTime; }
-
+        // ++ Vulernable ++ ----------------------------------------------------------------------------------------------------------------
         // vulernable time update
         if (m_playerState == EplayerState.Vulnerable)
-        { 
+        {
             m_vulnerableTime -= Time.deltaTime;
             if (m_vulnerableTime <= 0)
             {
-                if (m_playerState != EplayerState.Dead) { m_playerState = EplayerState.Default; }
+                m_playerState = EplayerState.Default;
                 m_spriteRenderer.material = m_SpriteDefaultMaterial;
+                m_iconObj.SetActive(false);
+                if (setVulerableFromEnergy) { setVulerableFromEnergy = false; }
             }
         }
 
-        // ++ Rolling ++
+        //// set Vulnerable when at 0 Stamina
+        //if (m_energy <= 0f && m_playerState == EplayerState.Default && !setVulerableFromEnergy)
+        //{
+        //    Vulnerable(0.5f);
+        //    m_energyBar.BackgroundFlash(0.5f);
+        //    setVulerableFromEnergy = true;
+        //}
+
+        // ++ Block ++ ------------------------------------------------------------------------------------------------------------------------
+        // count down block delay
+        if (m_blockDelay > 0) { m_blockDelay -= Time.deltaTime; }
+
+        // ++ Rolling ++-----------------------------------------------------------------------------------------------------------------------
         // Increase timer that checks roll duration
         if (m_playerState == EplayerState.Rolling)
         {
@@ -322,8 +370,8 @@ public class HeroController : MonoBehaviour, IDamageable
             m_rollCurrentTime = 0;
         }
 
-        // energy regen
-        if (m_timeSinceEnergyGain > m_energyGainInterval && m_energy != m_maxEnergy && m_playerState != EplayerState.Dead)
+        // ++ Energy Regen ++ -------------------------------------------------------------------------------------------------------------------
+        if (m_timeSinceEnergyGain > m_energyGainInterval && m_energy != m_maxEnergy && m_playerState != EplayerState.Dead && m_playerState != EplayerState.Blocking)
         {
             if (m_energy + m_energyGainAmount >= m_maxEnergy)
             {
@@ -340,13 +388,6 @@ public class HeroController : MonoBehaviour, IDamageable
             m_timeSinceEnergyGain = 0.0f; // reset time since last energy update
             //print("Energy Updated - Player: " + PlayerNumber);
         }
-
-        // Increase timer that checks roll duration
-        //if (m_rolling)
-        //    m_rollCurrentTime += Time.deltaTime;
-        // Disable rolling if timer extends duration
-        //if (m_rollCurrentTime > m_rollDuration)
-        //    m_rolling = false;
 
         //Check if character just landed on the ground
         if (!m_grounded && m_groundSensor.State())
@@ -368,18 +409,18 @@ public class HeroController : MonoBehaviour, IDamageable
         //float inputX = Input.GetAxis("Horizontal");
 
         // Handle direction swap of character on movement direction
-        if (m_moveDir > 0)
-        {
-            GetComponent<SpriteRenderer>().flipX = false; // flip sprite
-            m_facingDirection = 1;
-            m_attackSensor.transform.localPosition = m_attackSensorPosRight; // move attack sensor
-        }
-        else if (m_moveDir < 0)
-        {
-            GetComponent<SpriteRenderer>().flipX = true; // flip sprite
-            m_facingDirection = -1;
-            m_attackSensor.transform.localPosition = m_attackSensorPosLeft; //move attack sensor
-        }
+        //if (m_moveDir > 0)
+        //{
+        //    GetComponent<SpriteRenderer>().flipX = false; // flip sprite
+        //    m_facingDirection = 1;
+        //    m_attackSensor.transform.localPosition = m_attackSensorPosRight; // move attack sensor
+        //}
+        //else if (m_moveDir < 0)
+        //{
+        //    GetComponent<SpriteRenderer>().flipX = true; // flip sprite
+        //    m_facingDirection = -1;
+        //    m_attackSensor.transform.localPosition = m_attackSensorPosLeft; //move attack sensor
+        //}
 
         //Set AirSpeed in animator
         m_animator.SetFloat("AirSpeedY", m_body2d.velocity.y);
@@ -455,7 +496,7 @@ public class HeroController : MonoBehaviour, IDamageable
                 }
                 break;
             case EplayerState.Vulnerable:
-                TakeDamage(damageAmount * m_vulnerableDamageMultiplier);
+                TakeDamage(damageAmount * m_vulnerableDamageMultiplier); // take vulnerable modified damage
                 break;
         }
     }
@@ -509,7 +550,9 @@ public class HeroController : MonoBehaviour, IDamageable
     /// </summary>
     private void Vulnerable(float timeVulnerable)
     {
+        print("V");
         m_playerState = EplayerState.Vulnerable;
+        m_iconObj.SetActive(true);
         m_spriteRenderer.material = m_SpriteFlashMaterial;
         m_vulnerableTime = timeVulnerable;
 

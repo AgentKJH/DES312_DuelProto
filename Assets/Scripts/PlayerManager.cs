@@ -8,22 +8,38 @@ using UnityEngine.UI;
 
 public class PlayerManager : MonoBehaviour
 {
+    // ++ Refs ++
+    // Compoents
     [SerializeField] PlayerInputManager InputManager;
     [SerializeField] TextMeshProUGUI bannerText;
 
+    // Player starting location trasforms
     [SerializeField] Transform player1StartPositon;
     [SerializeField] Transform player2StartPositon;
 
+    /// <summary>
+    /// List of player Controllers
+    /// </summary>
     public List<HeroController> HeroControllers;
+    /// <summary>
+    /// Singleton Instance of the PlayerManager
+    /// </summary>
     public static PlayerManager Instance;
 
+    // ++ Clash ++
     private float m_clashWindowTimer;
     private float m_clashWindowDuration = 0.15f;
     public bool m_doClash = false;
 
-    // data
+    // ++ Data Tracking ++ 
+    /// <summary>
+    /// Stores duel instance data
+    /// </summary>
     public Dictionary<string, object> DuelOverData = new Dictionary<string, object>();
-    bool d_PMtrackData = false;
+    /// <summary>
+    /// bool to check in PM (player manager) should track data
+    /// </summary>
+    bool d_PMtrackData = false; 
     public float d_totalDuelTime = 0;
     int d_numberOfClashes = 0;
 
@@ -33,6 +49,12 @@ public class PlayerManager : MonoBehaviour
         Instance = this; // Set up singleton
     }
 
+
+    /// <summary>
+    /// Called when a input device is connected, handles player number allocation, storing player refs and starting the game when both players are in.
+    /// </summary>
+    /// <param name="playerCharacterRef"></param>
+    /// <returns></returns>
     public int PlayerJoined(HeroController playerCharacterRef)
     {
         if (HeroControllers.Count < 2)
@@ -42,7 +64,7 @@ public class PlayerManager : MonoBehaviour
             {
                 playerCharacterRef.transform.position = player1StartPositon.transform.position; 
             }
-            if (HeroControllers.Count == 2) 
+            if (HeroControllers.Count == 2)
             {
                 playerCharacterRef.transform.position = player2StartPositon.transform.position;
                 foreach (HeroController controller in HeroControllers) { controller.m_playerUnlocked = false; } // disenables movement for characters
@@ -130,6 +152,7 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
+        // update clash timer
         if (m_doClash)
         {
             m_clashWindowTimer += Time.deltaTime;
@@ -140,7 +163,8 @@ public class PlayerManager : MonoBehaviour
             }
         }
 
-        if (d_PMtrackData) { d_totalDuelTime += Time.deltaTime; } // track time dueling 
+        // track time dueling
+        if (d_PMtrackData) { d_totalDuelTime += Time.deltaTime; }
 
     }
 }
