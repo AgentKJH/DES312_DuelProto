@@ -631,17 +631,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0cadafc44435d2649b8aa171d49f61d6, type: 3}
---- !u!114 &378847370 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 369939624631132891, guid: d7de2fd725c1d3d48bd7759feee2ca68, type: 3}
-  m_PrefabInstance: {fileID: 696557607318935695}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 284490c6980ba354689ff150efe7d53a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &410723460
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2851,8 +2840,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 378847370}
-        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+      - m_Target: {fileID: 1970144886}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: QuitApplication
         m_Mode: 1
         m_Arguments:
@@ -3185,6 +3174,7 @@ GameObject:
   - component: {fileID: 1970144884}
   - component: {fileID: 1970144883}
   - component: {fileID: 1970144882}
+  - component: {fileID: 1970144886}
   m_Layer: 5
   m_Name: MainUI
   m_TagString: Untagged
@@ -3276,6 +3266,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1970144886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1970144881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a338dfec4cadb294882e7b7aec20acd2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &2039605853 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2581226205637218566, guid: d5f7066e247357149b9a778fcd53e819, type: 3}
