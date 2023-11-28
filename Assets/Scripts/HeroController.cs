@@ -485,14 +485,14 @@ public class HeroController : MonoBehaviour, IDamageable
                 }
                 else
                 {
-                    float adjustedDamage = (damageAmount * m_blockEnergyDamageMultiplier) - m_energy;
+                    //float adjustedDamage = (damageAmount * m_blockEnergyDamageMultiplier) - m_energy;
                     if (d_trackData) { d_totalEnergyUsed += m_energy; } // track energy lost
 
                     // update energy
                     m_energy = 0;
                     m_energyBar.UpdateResourceBar(m_energy, m_maxEnergy);
 
-                    TakeDamage(adjustedDamage * m_blockDamageMultiplier); // take adjusted damage
+                    //TakeDamage(adjustedDamage * m_blockDamageMultiplier); // take adjusted damage
                 }
                 break;
             case EplayerState.Vulnerable:
