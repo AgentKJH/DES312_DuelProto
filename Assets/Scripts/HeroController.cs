@@ -82,7 +82,7 @@ public class HeroController : MonoBehaviour, IDamageable
     // energy
     private float m_timeSinceEnergyGain = 0.0f;
     private float m_energyGainInterval = 0.5f;
-    private float m_energyGainAmount = 5f;
+    private float m_energyGainAmount = 10f;
 
     // block 
     /// <summary>
