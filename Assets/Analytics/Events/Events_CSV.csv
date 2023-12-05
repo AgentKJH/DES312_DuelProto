@@ -1,0 +1,7 @@
+Timestamp,UserID,Event Name,UUID,Param/PlayerNumber,Param/PlayerDefeated,Param/NumberOfAttacksInput,Param/NumberOfBlocksInput,Param/NumberOfHitsBlocked,Param/NumberOfHitsTaken,Param/TotalEnergyUsed,Param/TotalEnergyGenerated,Param/AverageEnergyUsed,Param/TotalDistanceTraveled,Param/TotalDuelTime,Param/NumberOfClashes
+5/12/2023 13:35:29,08907,PlayerDuelOverData,7aad9439ef8cdd533dd14d3cc67b10a9,1,True,0,0,0,5,0,0,0,11.49571,,
+5/12/2023 13:35:29,08907,PlayerDuelOverData,7aad9439ef8cdd533dd14d3cc67b10a9,2,False,5,0,0,0,150,50,20.5949841,11.31324,,
+5/12/2023 13:35:29,08907,DuelOverData,bb9eafb20f75d94f17356de7f3e03c31,,,,,,,,,,,7.283327,0
+5/12/2023 13:38:20,59713,PlayerDuelOverData,23fcf4a2193d50b9d705c272e9ffe724,1,True,0,1,0,5,0,0,0,12.5387907,,
+5/12/2023 13:38:20,59713,PlayerDuelOverData,23fcf4a2193d50b9d705c272e9ffe724,2,False,5,0,0,0,150,55,19.4643745,9.868746,,
+5/12/2023 13:38:20,59713,DuelOverData,6758dd1b8aab177ffc96e9a771148996,,,,,,,,,,,7.706387,0

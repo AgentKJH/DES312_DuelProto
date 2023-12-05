@@ -120,6 +120,17 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &9236551 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5914630628327409929, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
+  m_PrefabInstance: {fileID: 421095268}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76709aef103822e45b3592124462f32d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &32865520
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -705,14 +716,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 184233374249438444, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 184233374249438444, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1342299739080169311, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -753,26 +756,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3409012840275199182, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3409012840275199182, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3682682726615163090, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
       propertyPath: m_Name
       value: PlayerManager
-      objectReference: {fileID: 0}
-    - target: {fileID: 6210117409571878214, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
-      propertyPath: m_AllowJoining
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8273285605179694519, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
       propertyPath: bannerText
       value: 
       objectReference: {fileID: 1119481773}
+    - target: {fileID: 8273285605179694519, guid: 00eb1b6b30451dc4aa947265f5061a72, type: 3}
+      propertyPath: soundManager
+      value: 
+      objectReference: {fileID: 9236551}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -793,6 +788,10 @@ PrefabInstance:
     - target: {fileID: 1810374959312665362, guid: d0e1b03230cdb0b4684e322e8b49bdfe, type: 3}
       propertyPath: m_EnvironmentName
       value: development
+      objectReference: {fileID: 0}
+    - target: {fileID: 1810374959312665362, guid: d0e1b03230cdb0b4684e322e8b49bdfe, type: 3}
+      propertyPath: m_InitialiseOnStart
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1810374959312665363, guid: d0e1b03230cdb0b4684e322e8b49bdfe, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2471,7 +2470,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Press any Button To Join
+  m_text: Press any Button to Join
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a73ec25e34b0dae4485a1ed5eddb7e5f, type: 2}
   m_sharedMaterial: {fileID: 4454912955633637130, guid: a73ec25e34b0dae4485a1ed5eddb7e5f, type: 2}
@@ -2498,7 +2497,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50.9
+  m_fontSize: 51.4
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

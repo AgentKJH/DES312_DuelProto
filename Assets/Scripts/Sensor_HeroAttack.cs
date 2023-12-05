@@ -19,6 +19,7 @@ public class Sensor_HeroAttack : MonoBehaviour
     /// </summary>
     public void DoAttack()
     {
+        //print("DoAttack Triggered");
         Physics2D.OverlapCollider(attackCollider2D, overlappedList);
         if (overlappedList.Count > 0)
         {
@@ -31,7 +32,7 @@ public class Sensor_HeroAttack : MonoBehaviour
                     damageable.Damage(20f, transform.parent.gameObject);
                     //HeroController target = collider.GetComponent<HeroController>();
                     //target.Damage(20f, transform.parent.gameObject);
-                    print(transform.parent.gameObject.name);
+                    //print(transform.parent.gameObject.name);
                     //print("damage");
                 }
                 //print(collider.gameObject.name + " " + collider.GetType().Name);

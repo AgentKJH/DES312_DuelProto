@@ -22,6 +22,12 @@ public class GameManager : MonoBehaviour
 
     public void SendGameData(string eventname, Dictionary<string, object> data)
     {
+        StartCoroutine(SendData(eventname, data));
+    }
+
+    IEnumerator SendData(string eventname, Dictionary<string , object> data)
+    {
+        yield return new WaitForSeconds(2f);
         AnalyticsManager.SendCustomEvent(eventname, data);
     }
 

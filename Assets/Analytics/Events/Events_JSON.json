@@ -1,0 +1,100 @@
+[
+  {
+    "eventTimestamp": "5/12/2023 13:35:29",
+    "userID": "08907",
+    "eventName": "PlayerDuelOverData",
+    "eventUUID": "7aad9439ef8cdd533dd14d3cc67b10a9",
+    "GA_Value": 0.0,
+    "eventParams": {
+      "PlayerNumber": 1,
+      "PlayerDefeated": true,
+      "NumberOfAttacksInput": 0,
+      "NumberOfBlocksInput": 0,
+      "NumberOfHitsBlocked": 0,
+      "NumberOfHitsTaken": 5,
+      "TotalEnergyUsed": 0.0,
+      "TotalEnergyGenerated": 0.0,
+      "AverageEnergyUsed": 0.0,
+      "TotalDistanceTraveled": 11.49571
+    }
+  },
+  {
+    "eventTimestamp": "5/12/2023 13:35:29",
+    "userID": "08907",
+    "eventName": "PlayerDuelOverData",
+    "eventUUID": "7aad9439ef8cdd533dd14d3cc67b10a9",
+    "GA_Value": 0.0,
+    "eventParams": {
+      "PlayerNumber": 2,
+      "PlayerDefeated": false,
+      "NumberOfAttacksInput": 5,
+      "NumberOfBlocksInput": 0,
+      "NumberOfHitsBlocked": 0,
+      "NumberOfHitsTaken": 0,
+      "TotalEnergyUsed": 150.0,
+      "TotalEnergyGenerated": 50.0,
+      "AverageEnergyUsed": 20.5949841,
+      "TotalDistanceTraveled": 11.31324
+    }
+  },
+  {
+    "eventTimestamp": "5/12/2023 13:35:29",
+    "userID": "08907",
+    "eventName": "DuelOverData",
+    "eventUUID": "bb9eafb20f75d94f17356de7f3e03c31",
+    "GA_Value": 0.0,
+    "eventParams": {
+      "TotalDuelTime": 7.283327,
+      "NumberOfClashes": 0
+    }
+  },
+  {
+    "eventTimestamp": "5/12/2023 13:38:20",
+    "userID": "59713",
+    "eventName": "PlayerDuelOverData",
+    "eventUUID": "23fcf4a2193d50b9d705c272e9ffe724",
+    "GA_Value": 0.0,
+    "eventParams": {
+      "PlayerNumber": 1,
+      "PlayerDefeated": true,
+      "NumberOfAttacksInput": 0,
+      "NumberOfBlocksInput": 1,
+      "NumberOfHitsBlocked": 0,
+      "NumberOfHitsTaken": 5,
+      "TotalEnergyUsed": 0.0,
+      "TotalEnergyGenerated": 0.0,
+      "AverageEnergyUsed": 0.0,
+      "TotalDistanceTraveled": 12.5387907
+    }
+  },
+  {
+    "eventTimestamp": "5/12/2023 13:38:20",
+    "userID": "59713",
+    "eventName": "PlayerDuelOverData",
+    "eventUUID": "23fcf4a2193d50b9d705c272e9ffe724",
+    "GA_Value": 0.0,
+    "eventParams": {
+      "PlayerNumber": 2,
+      "PlayerDefeated": false,
+      "NumberOfAttacksInput": 5,
+      "NumberOfBlocksInput": 0,
+      "NumberOfHitsBlocked": 0,
+      "NumberOfHitsTaken": 0,
+      "TotalEnergyUsed": 150.0,
+      "TotalEnergyGenerated": 55.0,
+      "AverageEnergyUsed": 19.4643745,
+      "TotalDistanceTraveled": 9.868746
+    }
+  },
+  {
+    "eventTimestamp": "5/12/2023 13:38:20",
+    "userID": "59713",
+    "eventName": "DuelOverData",
+    "eventUUID": "6758dd1b8aab177ffc96e9a771148996",
+    "GA_Value": 0.0,
+    "eventParams": {
+      "TotalDuelTime": 7.706387,
+      "NumberOfClashes": 0
+    }
+  }
+]
